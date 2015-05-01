@@ -76,6 +76,16 @@ class FilehashCacheBustingWorker extends CacheBustingWorker
         }
 
         //if we can't find the file locally we have to dump it to hash the contents
-        return hash('sha1', $asset->dump());
+        // because this could run during cache clear, get the unfiltered hash of contents
+        $filters = $asset->getFilters();
+        $asset->clearFilters();
+        
+        $hash =  hash('sha1', $asset->dump());
+
+        foreach($filters as $filter){
+            $asset->ensureFilter($filter);
+        }
+
+        return $hash;
     }
 }

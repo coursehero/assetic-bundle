@@ -54,16 +54,28 @@ class FilehashCacheBustingWorker extends CacheBustingWorker
     {
         static $hashCache = [];
 
-        if (!isset($hashCache[$asset->getTargetPath()])){
-            $sourcePath = $asset->getSourcePath();
-            $sourceRoot = $asset->getSourceRoot();
-            if (!($sourcePath && $sourceRoot && file_exists($sourceRoot . "/" . $sourcePath))){
-                $hashCache[$asset->getTargetPath()] = hash('sha1', $asset->dump());
-            } else{
-                $hashCache[$asset->getTargetPath()] = hash_file('sha1', $sourceRoot . "/" . $sourcePath);
+        $data = null;
+        if ($asset->getTargetPath()){
+            if (!isset($hashCache[$asset->getTargetPath()])) {
+                $hashCache[$asset->getTargetPath()] = $this->getAssetHash($asset);
             }
+
+            $data = $hashCache[$asset->getTargetPath()];
+        } else{
+            $data = $this->getAssetHash($asset);
         }
-        $data = $hashCache[$asset->getTargetPath()];
+
         hash_update($hash, $data);
+    }
+
+    protected function getAssetHash(AssetInterface $asset){
+        $sourcePath = $asset->getSourcePath();
+        $sourceRoot = $asset->getSourceRoot();
+        if ($sourcePath && $sourceRoot && file_exists($sourceRoot . "/" . $sourcePath)){
+            return hash_file('sha1', $sourceRoot . "/" . $sourcePath);
+        }
+
+        //if we can't find the file locally we have to dump it to hash the contents
+        return hash('sha1', $asset->dump());
     }
 }

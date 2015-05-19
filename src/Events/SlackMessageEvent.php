@@ -9,7 +9,7 @@ use Symfony\Component\EventDispatcher\Event;
 /**
  * Class SlackMessageEvent
  *
- *
+ * Event to send a slack message using the SlackMessengerService
  */
 class SlackMessageEvent extends Event {
     const EVENT_NAME = "course_hero.utils.slack_message";

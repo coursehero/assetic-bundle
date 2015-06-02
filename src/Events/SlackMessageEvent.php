@@ -5,20 +5,41 @@ namespace CourseHero\UtilsBundle\Events;
 use CourseHero\UserBundle\Entity\User;
 use CourseHero\PaymentBundle\Entity\Subscription;
 use Symfony\Component\EventDispatcher\Event;
+use JMS\Serializer\Annotation as Serializer;
+
 
 /**
  * Class SlackMessageEvent
  *
  * Event to send a slack message using the SlackMessengerService
+ *
+ * @Serializer\ExclusionPolicy("none")
  */
-class SlackMessageEvent extends Event {
+class SlackMessageEvent extends AsyncEvent {
     const EVENT_NAME = "course_hero.utils.slack_message";
 
+    /**
+     * @Serializer\Type("string")
+     */
     protected $text;
+    /**
+     * @Serializer\Type("string")
+     */
     protected $channel;
+    /**
+     * @Serializer\Type("string")
+     */
     protected $slackbotname;
+    /**
+     * @Serializer\Type("string")
+     */
     protected $emojiIcon;
+    /**
+     * TODO: Not sure if this is right?
+     * @Serializer\Type("array")
+     */
     protected $attachments;
+
 
     public function __construct($text,
                                 $channel = '#debug',

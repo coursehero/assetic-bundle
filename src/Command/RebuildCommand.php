@@ -158,7 +158,29 @@ class RebuildCommand extends DumpCommand
             }
 
             if (false === @file_put_contents($target, $asset->dump())) {
-                throw new \RuntimeException('Unable to write file '.$target);
+//                throw new \RuntimeException('Unable to write file '.$target);
+            }
+
+            if (preg_match("/sym-assets\/css\/.*\.css/i", $target)){
+                $v2Target = preg_replace("/sym-assets\/css\/(.*\.css)/i", "/sym-assets/css/v2_$1",$target);
+                $patterns = [
+                    '/#ff6900/',
+                    '/#e65f00/',
+                    '/#ff781a/',
+                    '/#ff8026/'
+                ];
+
+                $replacements = [
+                    '#e00099',
+                    '#CC008B',
+                    '#fd00ad',
+                    '#fd00ad'
+                ];
+                $v2Asset = preg_replace($patterns, $replacements, $asset->dump());
+                if (false === @file_put_contents($v2Target, $v2Asset)) {
+//                    throw new \RuntimeException('Unable to write file '.$v2Target);
+                }
+
             }
         }
     }

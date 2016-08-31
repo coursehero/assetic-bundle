@@ -173,7 +173,10 @@ class RebuildCommand extends DumpCommand
                 '/#e65f00/',
                 '/#ff781a/',
                 '/#ff8026/',
-                '/#F83/'
+                '/#F83/',
+                '/#f06300/',
+                '/#eb6100/',
+                '/#ff8129/'
             ];
 
             $replacements = [
@@ -181,7 +184,10 @@ class RebuildCommand extends DumpCommand
                 '#CC008B',
                 '#fd00ad',
                 '#fd00ad',
-                '#CC008B'
+                '#CC008B',
+                '#CC008B',
+                '#fd00ad',
+                '#fd00ad'
             ];
             $v2Asset = preg_replace($patterns, $replacements, $asset->dump());
             if (false === @file_put_contents($target, $v2Asset)) {

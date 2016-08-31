@@ -107,80 +107,89 @@ class RebuildCommand extends DumpCommand
         );
 
         foreach ($combinations as $combination) {
+            $v2Target = "";
             $asset->setValues($combination);
 
             // resolve the target path
             $target = rtrim($this->basePath, '/').'/'.$asset->getTargetPath();
-            $target = str_replace('_controller/', '', $target);
-            $target = VarUtils::resolve($target, $asset->getVars(), $asset->getValues());
-
-            if (!is_dir($dir = dirname($target))) {
-                $stdout->writeln(sprintf(
-                    '<comment>%s</comment> <info>[dir+]</info> %s',
-                    date('H:i:s'),
-                    $dir
-                ));
-
-                if (false === @mkdir($dir, 0777, true)) {
-                    throw new \RuntimeException('Unable to create directory '.$dir);
-                }
+            $this->doAssetDump($asset, $stdout, $target);
+            if (preg_match("/sym-assets\/css\/.*\.css/i", $target)) {
+                $v2Target = preg_replace("/sym-assets\/css\/(.*\.css)/i", "/sym-assets/css/v2_$1", $target);
+                $this->doAssetDump($asset, $stdout, $v2Target, "v2");
             }
+        }
+    }
 
+    private function doAssetDump(AssetInterface $asset, OutputInterface $stdout, $target, $version = 0){
+        $target = str_replace('_controller/', '', $target);
+        $target = VarUtils::resolve($target, $asset->getVars(), $asset->getValues());
+
+        if (!is_dir($dir = dirname($target))) {
             $stdout->writeln(sprintf(
-                '<comment>%s</comment> <info>[file+]</info> %s',
+                '<comment>%s</comment> <info>[dir+]</info> %s',
                 date('H:i:s'),
-                $target
+                $dir
             ));
 
-            if (OutputInterface::VERBOSITY_VERBOSE <= $stdout->getVerbosity()) {
-                if ($asset instanceof AssetCollectionInterface) {
-                    foreach ($asset as $leaf) {
-                        $root = $leaf->getSourceRoot();
-                        $path = $leaf->getSourcePath();
-                        $stdout->writeln(sprintf('        <comment>%s/%s</comment>', $root ?: '[unknown root]', $path ?: '[unknown path]'));
-                    }
-                } else {
-                    $root = $asset->getSourceRoot();
-                    $path = $asset->getSourcePath();
+            if (false === @mkdir($dir, 0777, true)) {
+                throw new \RuntimeException('Unable to create directory '.$dir);
+            }
+        }
+
+        $stdout->writeln(sprintf(
+            '<comment>%s</comment> <info>[file+]</info> %s',
+            date('H:i:s'),
+            $target
+        ));
+
+        if (OutputInterface::VERBOSITY_VERBOSE <= $stdout->getVerbosity()) {
+            if ($asset instanceof AssetCollectionInterface) {
+                foreach ($asset as $leaf) {
+                    $root = $leaf->getSourceRoot();
+                    $path = $leaf->getSourcePath();
                     $stdout->writeln(sprintf('        <comment>%s/%s</comment>', $root ?: '[unknown root]', $path ?: '[unknown path]'));
                 }
+            } else {
+                $root = $asset->getSourceRoot();
+                $path = $asset->getSourcePath();
+                $stdout->writeln(sprintf('        <comment>%s/%s</comment>', $root ?: '[unknown root]', $path ?: '[unknown path]'));
             }
+        }
 
-            if (\file_exists($target)){
-                $stdout->writeln(
-                    '<info>found</info>'
-                );
-                continue;
-            } else{
-                $stdout->writeln(
-                    '<comment>creating</comment>'
-                );
+        if (\file_exists($target)){
+            $stdout->writeln(
+                '<info>found</info>'
+            );
+            return;
+        } else{
+            $stdout->writeln(
+                '<comment>creating</comment>'
+            );
+        }
+
+        if ($version === "v2"){
+            $patterns = [
+                '/#ff6900/',
+                '/#e65f00/',
+                '/#ff781a/',
+                '/#ff8026/',
+                '/#F83/'
+            ];
+
+            $replacements = [
+                '#e00099',
+                '#CC008B',
+                '#fd00ad',
+                '#fd00ad',
+                '#CC008B'
+            ];
+            $v2Asset = preg_replace($patterns, $replacements, $asset->dump());
+            if (false === @file_put_contents($target, $v2Asset)) {
+                    throw new \RuntimeException('Unable to write file '.$target);
             }
-
+        } else {
             if (false === @file_put_contents($target, $asset->dump())) {
-//                throw new \RuntimeException('Unable to write file '.$target);
-            }
-
-            if (preg_match("/sym-assets\/css\/.*\.css/i", $target)){
-                $v2Target = preg_replace("/sym-assets\/css\/(.*\.css)/i", "/sym-assets/css/v2_$1",$target);
-                $patterns = [
-                    '/#ff6900/',
-                    '/#e65f00/',
-                    '/#ff781a/',
-                    '/#ff8026/'
-                ];
-
-                $replacements = [
-                    '#e00099',
-                    '#CC008B',
-                    '#fd00ad',
-                    '#fd00ad'
-                ];
-                $v2Asset = preg_replace($patterns, $replacements, $asset->dump());
-                if (false === @file_put_contents($v2Target, $v2Asset)) {
-//                    throw new \RuntimeException('Unable to write file '.$v2Target);
-                }
-
+                throw new \RuntimeException('Unable to write file '.$target);
             }
         }
     }

@@ -107,7 +107,6 @@ class RebuildCommand extends DumpCommand
         );
 
         foreach ($combinations as $combination) {
-            $v2Target = "";
             $asset->setValues($combination);
 
             // resolve the target path
@@ -173,7 +172,7 @@ class RebuildCommand extends DumpCommand
                 '/#e65f00/',
                 '/#ff781a/',
                 '/#ff8026/',
-                '/#F83/',
+                '/#ff8833/',
                 '/#f06300/',
                 '/#eb6100/',
                 '/#ff8129/'
@@ -181,11 +180,11 @@ class RebuildCommand extends DumpCommand
 
             $replacements = [
                 '#e00099',
-                '#CC008B',
+                '#cc008b',
                 '#fd00ad',
                 '#fd00ad',
-                '#CC008B',
-                '#CC008B',
+                '#cc008b',
+                '#cc008b',
                 '#fd00ad',
                 '#fd00ad'
             ];

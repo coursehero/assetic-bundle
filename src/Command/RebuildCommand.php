@@ -111,90 +111,52 @@ class RebuildCommand extends DumpCommand
 
             // resolve the target path
             $target = rtrim($this->basePath, '/').'/'.$asset->getTargetPath();
-            $this->doAssetDump($asset, $stdout, $target);
-            if (preg_match("/sym-assets\/css\/.*\.css/i", $target)) {
-                $v2Target = preg_replace("/sym-assets\/css\/(.*\.css)/i", "/sym-assets/css/v2_$1", $target);
-                $this->doAssetDump($asset, $stdout, $v2Target, "v2");
+            $target = str_replace('_controller/', '', $target);
+            $target = VarUtils::resolve($target, $asset->getVars(), $asset->getValues());
+
+            if (!is_dir($dir = dirname($target))) {
+                $stdout->writeln(sprintf(
+                    '<comment>%s</comment> <info>[dir+]</info> %s',
+                    date('H:i:s'),
+                    $dir
+                ));
+
+                if (false === @mkdir($dir, 0777, true)) {
+                    throw new \RuntimeException('Unable to create directory '.$dir);
+                }
             }
-        }
-    }
 
-    private function doAssetDump(AssetInterface $asset, OutputInterface $stdout, $target, $version = 0){
-        $target = str_replace('_controller/', '', $target);
-        $target = VarUtils::resolve($target, $asset->getVars(), $asset->getValues());
-
-        if (!is_dir($dir = dirname($target))) {
             $stdout->writeln(sprintf(
-                '<comment>%s</comment> <info>[dir+]</info> %s',
+                '<comment>%s</comment> <info>[file+]</info> %s',
                 date('H:i:s'),
-                $dir
+                $target
             ));
 
-            if (false === @mkdir($dir, 0777, true)) {
-                throw new \RuntimeException('Unable to create directory '.$dir);
-            }
-        }
-
-        $stdout->writeln(sprintf(
-            '<comment>%s</comment> <info>[file+]</info> %s',
-            date('H:i:s'),
-            $target
-        ));
-
-        if (OutputInterface::VERBOSITY_VERBOSE <= $stdout->getVerbosity()) {
-            if ($asset instanceof AssetCollectionInterface) {
-                foreach ($asset as $leaf) {
-                    $root = $leaf->getSourceRoot();
-                    $path = $leaf->getSourcePath();
+            if (OutputInterface::VERBOSITY_VERBOSE <= $stdout->getVerbosity()) {
+                if ($asset instanceof AssetCollectionInterface) {
+                    foreach ($asset as $leaf) {
+                        $root = $leaf->getSourceRoot();
+                        $path = $leaf->getSourcePath();
+                        $stdout->writeln(sprintf('        <comment>%s/%s</comment>', $root ?: '[unknown root]', $path ?: '[unknown path]'));
+                    }
+                } else {
+                    $root = $asset->getSourceRoot();
+                    $path = $asset->getSourcePath();
                     $stdout->writeln(sprintf('        <comment>%s/%s</comment>', $root ?: '[unknown root]', $path ?: '[unknown path]'));
                 }
-            } else {
-                $root = $asset->getSourceRoot();
-                $path = $asset->getSourcePath();
-                $stdout->writeln(sprintf('        <comment>%s/%s</comment>', $root ?: '[unknown root]', $path ?: '[unknown path]'));
             }
-        }
 
-        if (\file_exists($target)){
-            $stdout->writeln(
-                '<info>found</info>'
-            );
-            return;
-        } else{
-            $stdout->writeln(
-                '<comment>creating</comment>'
-            );
-        }
-
-        if ($version === "v2"){
-            $patterns = [
-                '/#ff6900/',
-                '/#e65f00/',
-                '/#ff781a/',
-                '/#ff8026/',
-                '/#ff8833/',
-                '/#f06300/',
-                '/#eb6100/',
-                '/#ff8129/',
-                '/#ff700b/'
-            ];
-
-            $replacements = [
-                '#e00099',
-                '#cc008b',
-                '#fd00ad',
-                '#fd00ad',
-                '#cc008b',
-                '#cc008b',
-                '#fd00ad',
-                '#fd00ad',
-                '#e00099'
-            ];
-            $v2Asset = preg_replace($patterns, $replacements, $asset->dump());
-            if (false === @file_put_contents($target, $v2Asset)) {
-                    throw new \RuntimeException('Unable to write file '.$target);
+            if (\file_exists($target)){
+                $stdout->writeln(
+                    '<info>found</info>'
+                );
+                continue;
+            } else{
+                $stdout->writeln(
+                    '<comment>creating</comment>'
+                );
             }
-        } else {
+
             if (false === @file_put_contents($target, $asset->dump())) {
                 throw new \RuntimeException('Unable to write file '.$target);
             }

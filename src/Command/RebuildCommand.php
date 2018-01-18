@@ -146,12 +146,12 @@ class RebuildCommand extends DumpCommand
                 }
             }
 
-            if (\file_exists($target)){
+            if (\file_exists($target)) {
                 $stdout->writeln(
                     '<info>found</info>'
                 );
                 continue;
-            } else{
+            } else {
                 $stdout->writeln(
                     '<comment>creating</comment>'
                 );

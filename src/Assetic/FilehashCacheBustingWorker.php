@@ -37,7 +37,7 @@ class FilehashCacheBustingWorker extends CacheBustingWorker
             foreach ($asset->all() as $i => $leaf) {
                 $this->hashAsset($leaf, $hash);
             }
-        } else{
+        } else {
             $this->hashAsset($asset, $hash);
         }
 
@@ -55,23 +55,24 @@ class FilehashCacheBustingWorker extends CacheBustingWorker
         static $hashCache = [];
 
         $data = null;
-        if ($asset->getTargetPath()){
+        if ($asset->getTargetPath()) {
             if (!isset($hashCache[$asset->getTargetPath()])) {
                 $hashCache[$asset->getTargetPath()] = $this->getAssetHash($asset);
             }
 
             $data = $hashCache[$asset->getTargetPath()];
-        } else{
+        } else {
             $data = $this->getAssetHash($asset);
         }
 
         hash_update($hash, $data);
     }
 
-    protected function getAssetHash(AssetInterface $asset){
+    protected function getAssetHash(AssetInterface $asset)
+    {
         $sourcePath = $asset->getSourcePath();
         $sourceRoot = $asset->getSourceRoot();
-        if ($sourcePath && $sourceRoot && file_exists($sourceRoot . "/" . $sourcePath)){
+        if ($sourcePath && $sourceRoot && file_exists($sourceRoot . "/" . $sourcePath)) {
             return hash_file('sha1', $sourceRoot . "/" . $sourcePath);
         }
 
@@ -82,7 +83,7 @@ class FilehashCacheBustingWorker extends CacheBustingWorker
         
         $hash =  hash('sha1', $asset->dump());
 
-        foreach($filters as $filter){
+        foreach ($filters as $filter) {
             $asset->ensureFilter($filter);
         }
 

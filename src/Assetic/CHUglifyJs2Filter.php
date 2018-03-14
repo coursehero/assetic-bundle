@@ -3,7 +3,6 @@
 namespace CourseHero\UtilsBundle\Assetic;
 
 use Assetic\Asset\AssetInterface;
-use Assetic\Filter\FilterInterface;
 use Assetic\Filter\UglifyJs2Filter;
 use CourseHero\UtilsBundle\Assetic\BundledAppFilter;
 

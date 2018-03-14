@@ -36,6 +36,7 @@ class FilehashCacheBustingWorker extends CacheBustingWorker
         // NOTE: we are processing all of these files twice ... once when this worker is called w/
         // I think we can get the desired behevior by making copying the login in CacheBustingWorker::getHash, but changing line 64 to hash
         // the file contents instead of the source path
+        // TODO: add some logging and explore this further
 
         if ($asset instanceof AssetCollectionInterface) {
             foreach ($asset->all() as $i => $leaf) {

@@ -46,34 +46,26 @@ class BundledAppFilter implements FilterInterface
         // return;
 
 
-        // try to maintain app name
-        // example input to match: ../../js/dist/proco/annotations/app.js
-        // TODO this doesn't seem to change the name of the emitted file
-        // $matches = [];
-        // if (preg_match("/js\/dist\/(.*)\\.js/i", $asset->getSourcePath(), $matches)) {
-        //     $appName = str_replace('/', '-', $matches[1]);
-        // } else {
-        //     $appName = 'app';
-        // }
-
         // $asset->getTargetPath() can look like 'js/0da6667_app_1.js'
         // rename the basename (last part) to '0da6667_$appName.js'
-        $targetPathParts = explode('/', $asset->getTargetPath());
-        $partToReplace = explode(
-            '_', end($targetPathParts), 2
-        )[1];
-        $newTargetPath = str_replace($partToReplace, $appName . '.js', $asset->getTargetPath());
-        $newTargetBasename = basename($newTargetPath);
-        $asset->setTargetPath($newTargetPath);
-
-        
-
+        // $targetPathParts = explode('/', $asset->getTargetPath());
+        // $partToReplace = explode(
+        //     '_', end($targetPathParts), 2
+        // )[1];
+        // $newTargetPath = str_replace($partToReplace, $appName . '.js', $asset->getTargetPath());
+        // $newTargetBasename = basename($newTargetPath);
+        // $asset->setTargetPath($newTargetPath);
 
         // var_dump("in the filter yo \n");
         // var_dump($asset->getSourcePath());
         // $root = rtrim($this->asseticDir, '/');
         $root = $asset->getSourceRoot();
         $symAssetsRoot = "/var/www/html/coursehero/src/Control/sym-assets/";
+        
+        // ensure folder exists
+        // if (!file_exists($symAssetsRoot . 'js')) {
+        //     mkdir($symAssetsRoot . 'js', 0755, true);
+        // }
 
         // $targetPathOnDisk = $symAssetsRoot . str_replace('_controller/', '', $asset->getTargetPath());
         $from = $asset->getSourceRoot() . '/' . $asset->getSourcePath() . '.map';
@@ -83,22 +75,22 @@ class BundledAppFilter implements FilterInterface
         $to = $symAssetsRoot . $targetPath . '.map';
         
         $errors = false;
-        if (!copy($from, $to)) {
+        if (file_exists($from) && !copy($from, $to)) {
             $errors = error_get_last();
-            // echo "COPY ERROR: ".$errors['type'];
-            // echo "<br />\n".$errors['message'];
+            throw new \Exception('issue copying source map ' . $errors['type'] . ' ' . $errors['message']);
         }
 
         $log = '';
         $log = $log . "console.log('$from');";
         $log = $log . "console.log('$to');";
-        $log = $log . "console.log('$newTargetBasename');";
         if ($errors) {
             $type = $errors['type'];
             $message = $errors['message'];
             $log = $log . "console.log('$type');";
             $log = $log . "console.log('$message');";
         }
-        $asset->setContent($content . "\n$log\n" . "\n/// sourceMappingURL=" . $newTargetBasename . '.map');
+        // $asset->setContent($content . "\n$log\n" . "\n//# sourceMappingURL=" . basename($to));
+        $asset->setContent($content . "\n//# sourceMappingURL=" . 'https://coursehero.local/sym-assets/' . $targetPath . '.map');
+        // $asset->setContent($content);
     }
 }

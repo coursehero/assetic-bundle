@@ -13,6 +13,37 @@ class BundledAppWorker implements WorkerInterface
     {
         //disable
         return;
+        
+        if ($asset instanceof AssetCollectionInterface) {
+            return;
+        }
+
+        $isBundled = false;
+        $filters = $asset->getFilters();
+        foreach ($filters as $filter) {
+            if (get_class($filter) == BundledAppFilter::class) {
+                $isBundled = true;
+                break;
+            }
+        }
+
+        if ($isBundled) {
+            $matches = [];
+            if (preg_match("/js\/dist\/(.*)\\.js/i", $asset->getSourcePath(), $matches)) {
+                $appName = str_replace('/', '-', $matches[1]);
+            } else {
+                $appName = 'app';
+            }
+
+            var_dump('worker ............ | ');
+            var_dump($asset->getTargetPath());
+            // $factory->setDefaultOutput("js/$appName-*");
+        }
+
+
+
+        //disable
+        return;
 
         if (!$factory->getAssetManager() || !$factory->getFilterManager() || !$factory->getFilterManager()->has('bundled')) {
             return;

@@ -27,18 +27,22 @@ class BundledAppWorker implements WorkerInterface
             }
         }
 
-        if ($hasBundledAppFilter && $numAssets > 1) {
+        if (!$hasBundledAppFilter) {
+            return;
+        }
+
+        if ($numAssets > 1) {
             $assetNamesFormatted = join(', ', array_map(function ($a) {
                 return $a->getSourcePath();
             }, $asset->all()));
             throw new \Exception("The BundledAppFilter may only have one input, but multiple were given: $assetNamesFormatted");
         }
 
-        if ($hasBundledAppFilter && $numAssets === 0) {
+        if ($numAssets === 0) {
             throw new \Exception("The BundledAppFilter must have one input, but none given");
         }
 
-        if ($hasBundledAppFilter && $numAssets === 1) {
+        if ($numAssets === 1) {
             // try to maintain app name
             // example input source path: ../../js/dist/proco/annotations/app.js
             // example initial target path: js/bcdd303.js (this hash is the assetic configuration hash, not the content hash)

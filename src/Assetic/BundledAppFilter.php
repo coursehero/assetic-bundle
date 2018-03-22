@@ -10,7 +10,7 @@ class BundledAppFilter implements FilterInterface
     /** @var string */
     private $host;
 
-    /** @var asseticWriteToDir */
+    /** @var string */
     private $asseticWriteToDir;
 
     public function __construct(string $host, string $asseticWriteToDir)
@@ -36,8 +36,8 @@ class BundledAppFilter implements FilterInterface
      * sym-assets/js/proco-annotations-app-0da6667-f66966b.js.map
      *
      * Because the UglifyJS filter would strip source maps, disable it (see CHUglifyJs2Filter)
-     * Bundled code should already be minified.
-     * Attempt to rename asset based on bundle name.
+     * Bundled code should already be minified
+     * Attempt to rename asset based on bundle name (see BundledAppWorker)
      * Add source map attribute for browser debugging: //# sourceMappingURL=<urlToSourceMap>
      * One single input is enforced with BundledAppWorker
      */
@@ -63,7 +63,6 @@ class BundledAppFilter implements FilterInterface
             mkdir(dirname($to), 0777, true);
         }
 
-        $errors = false;
         if (!copy($from, $to)) {
             $errors = error_get_last();
             throw new \Exception('issue copying source map ' . $errors['type'] . ' ' . $errors['message']);

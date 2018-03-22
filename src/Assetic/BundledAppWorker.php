@@ -18,7 +18,7 @@ class BundledAppWorker implements WorkerInterface
         }
 
         // if an asset collection is using the bundled filter, there should be only ONE asset
-        $numAssets = $asset instanceof AssetCollectionInterface ? count($asset->all()) : 1;
+        $numAssets = count($asset->all());
         $hasBundledAppFilter = false;
         foreach ($asset->getFilters() as $filter) {
             if (get_class($filter) == BundledAppFilter::class) {

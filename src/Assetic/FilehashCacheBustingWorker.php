@@ -33,6 +33,12 @@ class FilehashCacheBustingWorker extends CacheBustingWorker
     {
         $hash = hash_init('sha1');
 
+        // NOTE: we are processing all of these files twice ... once when this worker is called on the asset collection,
+        // and once when call for each asset.
+        // I think we can get the desired behavior by copying the code in CacheBustingWorker::getHash,
+        // but changing line 64 to hash the file contents instead of the source path
+        // TODO: add some logging and explore this further
+
         if ($asset instanceof AssetCollectionInterface) {
             foreach ($asset->all() as $i => $leaf) {
                 $this->hashAsset($leaf, $hash);

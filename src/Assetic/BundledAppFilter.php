@@ -37,7 +37,6 @@ class BundledAppFilter implements FilterInterface
      *
      * Because the UglifyJS filter would strip source maps, disable it (see CHUglifyJs2Filter)
      * Bundled code should already be minified
-     * Attempt to rename asset based on bundle name (see BundledAppWorker)
      * Add source map attribute for browser debugging: //# sourceMappingURL=<urlToSourceMap>
      * One single input is enforced with BundledAppWorker
      */
@@ -55,7 +54,7 @@ class BundledAppFilter implements FilterInterface
         // want to save the map file at 'js/0da6667-f66955b.js.map'. don't really care where it goes in local
         $targetPathForSourceMap = str_replace('_controller/', '', $asset->getTargetPath());
         $targetPathForSourceMap = explode('_', $targetPathForSourceMap, 2)[0]; // grab everything to left of first '_'
-        $targetPathForSourceMap = $targetPathForSourceMap . '.js.map';
+        $targetPathForSourceMap = $targetPathForSourceMap . '.map';
         $to = $this->asseticWriteToDir . '/' . $targetPathForSourceMap;
 
         // useful for local, the folder "sym-assets/js" doesn't always exist

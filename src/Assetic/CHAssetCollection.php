@@ -78,16 +78,26 @@ class CHAssetCollection extends AssetCollection
         $host = 'https://coursehero.local';
         $sourceMappingURL = $host . '/sym-assets/' . $targetPathForSourceMap;
 
-        // $bin = '/usr/local/bin/uglifyjs';
+        $mangle = true;
+        $compress = true;
+        $extraArgs = ($mangle ? '-m' : '') . ' ' . ($compress ? '-c' : '');
+        
         $bin = '/usr/bin/uglifyjs';
-        $cmd = "$bin --source-map \"root='coursehero:///',includeSources,url='$sourceMappingURL'\" -o $tmpOutput " . implode(' ', $tmpInputs);
+        // this is uglify-es CLI ... image is still using uglify-js for now
+        // $cmd = "$bin $extraArgs --source-map \"root='coursehero:///',includeSources,url='$sourceMappingURL'\" -o $tmpOutput " . implode(' ', $tmpInputs);
+        $cmd = "$bin $extraArgs --source-map $tmpOutput.map --source-map-root 'coursehero:///' --source-map-include-sources --source-map-url '$sourceMappingURL' -o $tmpOutput " . implode(' ', $tmpInputs);
+
         exec($cmd, $retArr, $retVal);
         if ($retVal !== 0) {
-            throw new \Exception(explode("\n", $retArr));
+            throw new \Exception(implode("\n", $retArr));
         }
 
         if (!file_exists($tmpOutput)) {
             throw new \RuntimeException('Error creating output file.');
+        }
+
+        if (!file_exists("$tmpOutput.map")) {
+            throw new \RuntimeException('Error creating source map for output file.');
         }
 
         $result = file_get_contents($tmpOutput);

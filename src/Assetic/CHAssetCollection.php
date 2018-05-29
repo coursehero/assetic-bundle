@@ -61,6 +61,12 @@ class CHAssetCollection extends AssetCollection
             return parent::dump($additionalFilter);
         }
 
+        // get some Symfony params
+        global $kernel;
+        $siteUrl = rtrim($kernel->getContainer()->getParameter('site_url'), '/');
+        $rootDir = rtrim($kernel->getContainer()->getParameter('kernel.root_dir'), '/');
+        $asseticWriteToDir = "$rootDir/../../Control/sym-assets";
+
         // loop through leaves and dump each asset
         $parts = [];
         foreach ($this as $asset) {
@@ -83,8 +89,7 @@ class CHAssetCollection extends AssetCollection
         $retArr = [];
         $retVal = -1;
         
-        $host = 'https://coursehero.local';
-        $sourceMappingURL = $host . '/sym-assets/' . $targetPathForSourceMap;
+        $sourceMappingURL = $siteUrl . '/sym-assets/' . $targetPathForSourceMap;
 
         $mangle = true;
         $compress = true;
@@ -111,7 +116,6 @@ class CHAssetCollection extends AssetCollection
         $result = file_get_contents($tmpOutput);
 
         // copy the source map to the sym-assets folder
-        $asseticWriteToDir = '/var/www/html/coursehero/src/Control/sym-assets';
         $to = $asseticWriteToDir . '/' . $targetPathForSourceMap;
 
         // useful for local, the folder "sym-assets/js" doesn't always exist

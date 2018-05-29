@@ -49,7 +49,7 @@ class BundledAppFilter implements FilterInterface
             return;
         }
 
-        // $asset->getTargetPath() can look like '_controller/js/0da6667_app_1.js' (local asset generation w/o cache busting worker)
+        // $asset->getTargetPath() can look like '_controller/js/0da6667_app_1.js' (debug mode - local asset generation w/o cache busting worker)
         //                                    or 'js/0da6667-f66955b_app_1-f66955b.js' (production w/ cache busting worker)
         // want to save the map file at 'js/0da6667-f66955b.js.map'. don't really care where it goes in local
         $targetPathForSourceMap = str_replace('_controller/', '', $asset->getTargetPath());

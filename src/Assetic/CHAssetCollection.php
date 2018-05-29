@@ -68,9 +68,7 @@ class CHAssetCollection extends AssetCollection
 
         $tmpOutput = tempnam(sys_get_temp_dir(), 'output');
 
-        $targetPathForSourceMap = str_replace('_controller/', '', $this->getTargetPath());
-        $targetPathForSourceMap = explode('_', $targetPathForSourceMap, 2)[0]; // grab everything to left of first '_'
-        $targetPathForSourceMap = $targetPathForSourceMap . '.map';
+        $targetPathForSourceMap = $this->getTargetPath() . '.map';
 
         $retArr = [];
         $retVal = -1;
@@ -80,7 +78,7 @@ class CHAssetCollection extends AssetCollection
 
         $mangle = true;
         $compress = true;
-        $extraArgs = ($mangle ? '-m' : '') . ' ' . ($compress ? '-c' : '');
+        $extraArgs = ($mangle ? '-m' : '') . ' ' . ($compress ? '-c' : ''); // -c unused=false ?
         
         $bin = '/usr/bin/uglifyjs';
         // this is uglify-es CLI ... image is still using uglify-js for now

@@ -8,6 +8,20 @@ use Assetic\Filter\FilterInterface;
 
 class CHAssetCollection extends AssetCollection
 {
+    public static function getCacheBustingHash()
+    {
+        static $sourceHash = '';
+        
+        if ($sourceHash === '') {
+            $class = new \ReflectionClass(self::class);
+            $fileName = $class->getFileName();
+            $classSource = file_get_contents($fileName);
+            $sourceHash = crc32($classSource);
+        }
+
+        return $sourceHash;
+    }
+
     public function dump(FilterInterface $additionalFilter = null)
     {
         // echo("========dump==========\n");

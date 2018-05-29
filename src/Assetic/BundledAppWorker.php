@@ -18,8 +18,7 @@ class BundledAppWorker implements WorkerInterface
             return;
         }
         
-        // if an asset collection is using the bundled filter, there should be only ONE asset
-        $numAssets = count($assetCollection->all());
+        // this worker only applies when BundleAppFilter is applied
         $hasBundledAppFilter = false;
         foreach ($assetCollection->getFilters() as $filter) {
             if (get_class($filter) == BundledAppFilter::class) {
@@ -27,11 +26,14 @@ class BundledAppWorker implements WorkerInterface
                 break;
             }
         }
-
+        
         if (!$hasBundledAppFilter) {
             return;
         }
-
+        
+        // if an asset collection is using the bundled filter, there should be only ONE asset
+        $numAssets = count($assetCollection->all());
+        
         if ($numAssets > 1) {
             $assetNamesFormatted = join(', ', array_map(function ($asset) {
                 return $asset->getSourcePath();

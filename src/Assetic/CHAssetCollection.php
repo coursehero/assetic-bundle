@@ -6,6 +6,19 @@ use Assetic\Asset\AssetCollection;
 use Assetic\Asset\HttpAsset;
 use Assetic\Filter\FilterInterface;
 
+/**
+ * See CHAssetFactory
+ *
+ * This is a custom AssetCollection that generates source maps. The default AssetCollection simply concats the input sources.
+ * This custom AssetCollection passes the input sources to UglifyJS with source maps enabled.
+ * This replaces the built in Uglify filter - it should no longer be used.
+ * The FlattenWorker is required such that all AssetCollections, when dumped, are just a flat collection of assets.
+ *
+ * Some future possible improvements:
+ * - Upgrade to uglify-es
+ * - Allow for input sources to bring along their own source maps. Probably requires uglify-es
+ * - If above works, should be able to remove the BundledWorker/Filter and rely on this instead for TypeScript source maps
+ */
 class CHAssetCollection extends AssetCollection
 {
     public static function getCacheBustingHash()
@@ -24,9 +37,6 @@ class CHAssetCollection extends AssetCollection
 
     public function dump(FilterInterface $additionalFilter = null)
     {
-        // echo("========dump==========\n");
-        // echo(count($this->all()));
-
         // be sure to only process JS assets
         foreach ($this as $singleAsset) {
             // asset collections don't have any source paths
@@ -46,20 +56,6 @@ class CHAssetCollection extends AssetCollection
         if ($hasBundledAppFilter) {
             return parent::dump($additionalFilter);
         }
-
-        // if the first call in the stack is the only call to CHAssetCollection::dump,
-        // that means this is the _root_ asset collection
-        // $backtrace = debug_backtrace(2);
-        // $isRootAssetCollection = count(
-        //     array_filter($backtrace, function($frame) {
-        //         return $frame['class'] == self::class && $frame['function'] === 'dump';
-        //     })
-        // ) === 1;
-        // echo("isRootAssetCollection: $isRootAssetCollection\n");
-
-        // foreach ($this as $asset) {
-        //     echo('asset: '.$asset->getSourcePath() . "\n");
-        // }
 
         if (empty($this->all())) {
             return parent::dump($additionalFilter);
@@ -124,6 +120,7 @@ class CHAssetCollection extends AssetCollection
         }
         
         // translate source file names
+        // the 'sources' property is what dev tools (such as Chrome DevTools) display as the file names for the original sources
         $sourceMap = json_decode(file_get_contents("$tmpOutput.map"), true);
         $sourceMap['sources'] = array_map(function ($asset) {
             if ($asset instanceof HttpAsset) {
@@ -136,6 +133,7 @@ class CHAssetCollection extends AssetCollection
         $sourceMap['sources'] = array_values($sourceMap['sources']);
         file_put_contents($to, json_encode($sourceMap));
 
+        // remove temporary files
         unlink($tmpOutput);
         unlink("$tmpOutput.map");
         foreach ($tmpInputs as $tmpInput) {

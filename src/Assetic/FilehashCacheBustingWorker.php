@@ -43,7 +43,6 @@ class FilehashCacheBustingWorker extends CacheBustingWorker
             foreach ($asset->all() as $i => $leaf) {
                 $this->hashAsset($leaf, $hash);
             }
-            hash_update($hash, CHAssetCollection::getCacheBustingHash());
         } else {
             $this->hashAsset($asset, $hash);
         }

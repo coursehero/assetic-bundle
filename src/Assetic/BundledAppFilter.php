@@ -54,7 +54,9 @@ class BundledAppFilter implements FilterInterface
         // want to save the map file at 'js/0da6667-f66955b.js.map'. don't really care where it goes in local
         $targetPathForSourceMap = str_replace('_controller/', '', $asset->getTargetPath());
         $targetPathForSourceMap = explode('_', $targetPathForSourceMap, 2)[0]; // grab everything to left of first '_'
-        $targetPathForSourceMap = $targetPathForSourceMap . '.map';
+        $targetPathForSourceMap = $targetPathForSourceMap . '.js.map';
+        echo("========={$asset->getTargetPath()}\n");
+        echo("=========$targetPathForSourceMap\n");
         $to = $this->asseticWriteToDir . '/' . $targetPathForSourceMap;
 
         // useful for local, the folder "sym-assets/js" doesn't always exist

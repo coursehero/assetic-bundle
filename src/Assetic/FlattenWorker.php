@@ -3,6 +3,7 @@
 namespace CourseHero\UtilsBundle\Assetic;
 
 use Assetic\Asset\AssetCollectionInterface;
+use Assetic\Asset\AssetCollection;
 use Assetic\Asset\AssetInterface;
 use Assetic\Asset\AssetReference;
 use Assetic\Factory\AssetFactory;
@@ -17,6 +18,8 @@ class FlattenWorker implements WorkerInterface
             return;
         }
 
+        // echo("collection getTargetPath {$assetCollection->getTargetPath()} \n");
+
         // be sure to only process JS assets
         foreach ($assetCollection as $asset) {
             // asset collections don't have any source paths
@@ -26,11 +29,24 @@ class FlattenWorker implements WorkerInterface
         }
 
         // flatten!
-        $allAssets = $assetCollection->all();
-        foreach ($allAssets as $asset) {
-            $assetCollection->removeLeaf($asset);
-        }
-        foreach ($allAssets as $asset) {
+        $newAssets = [];
+        $this->flatten($newAssets, $assetCollection);
+
+        $newAssetCollection = new AssetCollection(
+            $newAssets,
+            $assetCollection->getFilters(),
+            $assetCollection->getSourceRoot(),
+            $assetCollection->getVars()
+        );
+
+        $newAssetCollection->setTargetPath($assetCollection->getTargetPath());
+
+        return $newAssetCollection;
+    }
+
+    private function flatten(& $newAssets, $assetCollection)
+    {
+        foreach ($assetCollection->all() as $asset) {
             if ($asset instanceof AssetReference) {
                 $getAsset = function () {
                     return $this->resolve();
@@ -38,21 +54,10 @@ class FlattenWorker implements WorkerInterface
                 $asset = $getAsset->call($asset);
             }
 
-            if ($asset instanceof AssetCollectionInterface) {
-                $this->flatten($assetCollection, $asset);
-            } else {
-                $assetCollection->add($asset);
-            }
-        }
-    }
-
-    private function flatten($rootAssetCollection, $assetCollection)
-    {
-        foreach ($assetCollection as $asset) {
             if ($asset instanceof AssetCollection) {
-                $this->flatten($rootAssetCollection, $asset);
+                $this->flatten($newAssets, $asset);
             } else {
-                $rootAssetCollection->add($asset);
+                $newAssets[] = $asset;
             }
         }
     }

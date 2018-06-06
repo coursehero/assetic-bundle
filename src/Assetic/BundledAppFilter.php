@@ -55,8 +55,6 @@ class BundledAppFilter implements FilterInterface
         $targetPathForSourceMap = str_replace('_controller/', '', $asset->getTargetPath());
         $targetPathForSourceMap = explode('_', $targetPathForSourceMap, 2)[0]; // grab everything to left of first '_'
         $targetPathForSourceMap = $targetPathForSourceMap . '.js.map';
-        echo("========={$asset->getTargetPath()}\n");
-        echo("=========$targetPathForSourceMap\n");
         $to = $this->asseticWriteToDir . '/' . $targetPathForSourceMap;
 
         // useful for local, the folder "sym-assets/js" doesn't always exist

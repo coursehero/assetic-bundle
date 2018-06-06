@@ -14,6 +14,7 @@ namespace CourseHero\UtilsBundle\Command;
 use Assetic\Asset\AssetCollectionInterface;
 use Assetic\Asset\AssetInterface;
 use Assetic\Util\VarUtils;
+use CourseHero\UtilsBundle\Assetic\CHAssetBag;
 use Symfony\Bundle\AsseticBundle\Command\DumpCommand;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Input\InputArgument;
@@ -60,6 +61,8 @@ class RebuildCommand extends DumpCommand
         foreach ($this->am->getNames() as $name) {
             $this->dumpAsset($name, $stdout);
         }
+
+        $stdout->writeln('<comment>Finished rebuilding assets.</comment>');
     }
 
 
@@ -76,6 +79,14 @@ class RebuildCommand extends DumpCommand
     {
         $asset = $this->am->get($name);
         $formula = $this->am->getFormula($name);
+
+        // No need to compile the named JS collections separately
+        // usages of @some-named-collection will be flattened into individual files,
+        // and won't benefit from this caching
+        // these files are assetic/*_js and assetic/*.js
+        if (preg_match('/^assetic\/.*[._]js$/', $asset->getTargetPath())) {
+            return;
+        }
 
         // start by dumping the main asset
         $this->doDump($asset, $stdout);
@@ -135,9 +146,18 @@ class RebuildCommand extends DumpCommand
             if (OutputInterface::VERBOSITY_VERBOSE <= $stdout->getVerbosity()) {
                 if ($asset instanceof AssetCollectionInterface) {
                     foreach ($asset as $leaf) {
-                        $root = $leaf->getSourceRoot();
-                        $path = $leaf->getSourcePath();
-                        $stdout->writeln(sprintf('        <comment>%s/%s</comment>', $root ?: '[unknown root]', $path ?: '[unknown path]'));
+                        if ($leaf instanceof CHAssetBag) {
+                            $stdout->writeln('        <comment>[CHAssetBag]</comment>');
+                            foreach ($leaf->getBag() as $singleAsset) {
+                                $root = $singleAsset->getSourceRoot();
+                                $path = $singleAsset->getSourcePath();
+                                $stdout->writeln(sprintf('        <comment>%s/%s</comment>', $root ?: '[unknown root]', $path ?: '[unknown path]'));
+                            }
+                        } else {
+                            $root = $leaf->getSourceRoot();
+                            $path = $leaf->getSourcePath();
+                            $stdout->writeln(sprintf('        <comment>%s/%s</comment>', $root ?: '[unknown root]', $path ?: '[unknown path]'));
+                        }
                     }
                 } else {
                     $root = $asset->getSourceRoot();

@@ -4,6 +4,7 @@ namespace CourseHero\UtilsBundle\Assetic;
 
 use Assetic\Asset\AssetCollectionInterface;
 use Assetic\Asset\AssetInterface;
+use Assetic\Asset\AssetReference;
 use Assetic\Factory\AssetFactory;
 use Assetic\Factory\Worker\CacheBustingWorker;
 
@@ -17,82 +18,38 @@ use Assetic\Factory\Worker\CacheBustingWorker;
  */
 class FilehashCacheBustingWorker extends CacheBustingWorker
 {
-    public function __construct($separator = '-')
+    public function process(AssetInterface $asset, AssetFactory $factory)
     {
-        parent::__construct($separator);
-    }
-
-    /**
-     * Get the sha1 hash of an asset or asset collection
-     *
-     * @param AssetInterface $asset
-     * @param AssetFactory $factory
-     * @return string
-     */
-    protected function getHash(AssetInterface $asset, AssetFactory $factory)
-    {
-        $hash = hash_init('sha1');
-
-        // NOTE: we are processing all of these files twice ... once when this worker is called on the asset collection,
-        // and once when call for each asset.
-        // I think we can get the desired behavior by copying the code in CacheBustingWorker::getHash,
-        // but changing line 64 to hash the file contents instead of the source path
-        // TODO: add some logging and explore this further
-
-        if ($asset instanceof AssetCollectionInterface) {
-            foreach ($asset->all() as $i => $leaf) {
-                $this->hashAsset($leaf, $hash);
-            }
-        } else {
-            $this->hashAsset($asset, $hash);
+        if (!($asset instanceof AssetCollectionInterface)) {
+            return;
         }
 
+        return parent::process($asset, $factory);
+    }
+
+    protected function getHash(AssetInterface $asset, AssetFactory $factory): string
+    {
+        $hash = hash_init('sha1');
+        $content = $this->getAssetContent($asset);
+        hash_update($hash, $content);
         return substr(hash_final($hash), 0, 7);
     }
 
-    /**
-     * Update a given hash with the sha1 hash of an individual asset
-     *
-     * @param AssetInterface $asset
-     * @param $hash
-     */
-    protected function hashAsset(AssetInterface $asset, $hash)
+    protected function getAssetContent(AssetInterface $asset): string
     {
-        static $hashCache = [];
-
-        $data = null;
-        if ($asset->getTargetPath()) {
-            if (!isset($hashCache[$asset->getTargetPath()])) {
-                $hashCache[$asset->getTargetPath()] = $this->getAssetHash($asset);
-            }
-
-            $data = $hashCache[$asset->getTargetPath()];
-        } else {
-            $data = $this->getAssetHash($asset);
+        // grab the actual asset, if this is a reference
+        if ($asset instanceof AssetReference) {
+            // call the private method "resolve"
+            $getAsset = function () {
+                return $this->resolve();
+            };
+            $asset = $getAsset->call($asset);
         }
 
-        hash_update($hash, $data);
-    }
-
-    protected function getAssetHash(AssetInterface $asset)
-    {
-        $sourcePath = $asset->getSourcePath();
-        $sourceRoot = $asset->getSourceRoot();
-        if ($sourcePath && $sourceRoot && file_exists($sourceRoot . "/" . $sourcePath)) {
-            return hash_file('sha1', $sourceRoot . "/" . $sourcePath);
+        if (empty($asset->getContent())) {
+            $asset->load();
         }
 
-        //if we can't find the file locally we have to dump it to hash the contents
-        // because this could run during cache clear, get the unfiltered hash of contents
-        $filters = $asset->getFilters();
-        $asset->clearFilters();
-        
-        $hash =  hash('sha1', $asset->dump());
-
-        foreach ($filters as $filter) {
-            $asset->ensureFilter($filter);
-        }
-
-        return $hash;
+        return $asset->getContent();
     }
 }

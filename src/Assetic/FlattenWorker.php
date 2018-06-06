@@ -3,7 +3,6 @@
 namespace CourseHero\UtilsBundle\Assetic;
 
 use Assetic\Asset\AssetCollectionInterface;
-use Assetic\Asset\AssetCollection;
 use Assetic\Asset\AssetInterface;
 use Assetic\Asset\AssetReference;
 use Assetic\Factory\AssetFactory;
@@ -11,6 +10,14 @@ use Assetic\Factory\Worker\WorkerInterface;
 
 class FlattenWorker implements WorkerInterface
 {
+    /** @var array [ext: string, class: string, args: array] */
+    private $filterRules;
+
+    public function __construct(array $filterRules)
+    {
+        $this->filterRules = $filterRules;
+    }
+
     public function process(AssetInterface $assetCollection, AssetFactory $factory)
     {
         // only process the collection, not each individual asset
@@ -18,44 +25,84 @@ class FlattenWorker implements WorkerInterface
             return;
         }
 
-        // echo("collection getTargetPath {$assetCollection->getTargetPath()} \n");
-
-        // be sure to only process JS assets
-        foreach ($assetCollection as $asset) {
-            // asset collections don't have any source paths
-            if ($asset->getSourcePath() && !preg_match('/.js$/', $asset->getSourcePath())) {
-                return;
-            }
+        if (empty($assetCollection->all())) {
+            return;
         }
 
-        // flatten!
+        // for now, skip the "bundled" apps.
+        // TODO: Look into removing this guard, and having all source maps flow through the AssetBag / SourceMapFilter
+        $hasBundledAppFilter = false;
+        foreach ($assetCollection->getFilters() as $filter) {
+            if (get_class($filter) == BundledAppFilter::class) {
+                $hasBundledAppFilter = true;
+                break;
+            }
+        }
+        if ($hasBundledAppFilter) {
+            return;
+        }
+
+        // echo("FlattenWorker ====\n");
+        // echo("target path ". get_class($assetCollection) . ' ' . $assetCollection->getTargetPath() . "\n");
+        // foreach ($assetCollection as $asset) {
+        //     echo($asset->getSourcePath() . ' ' . get_class($asset) .  "\n");
+        // }
+
         $newAssets = [];
         $this->flatten($newAssets, $assetCollection);
 
-        $newAssetCollection = new AssetCollection(
+        $applicableFilterRules = array_filter($this->filterRules, function ($filterRule) use ($newAssets) {
+            $regex = '/' . $filterRule['ext'] . '$/';
+            foreach ($newAssets as $asset) {
+                if (!preg_match($regex, $asset->getSourcePath())) {
+                    return false;
+                }
+            }
+
+            return true;
+        });
+
+        if (empty($applicableFilterRules)) {
+            return;
+        }
+
+        $assetBag = new CHAssetBag(
             $newAssets,
+            $assetCollection->getTargetPath(),
             $assetCollection->getFilters(),
             $assetCollection->getSourceRoot(),
+            null,
             $assetCollection->getVars()
         );
 
-        $newAssetCollection->setTargetPath($assetCollection->getTargetPath());
+        foreach ($applicableFilterRules as $filterRule) {
+            $reflection = new \ReflectionClass($filterRule['class']);
+            $filter = $reflection->newInstanceArgs($filterRule['args']);
+            $assetBag->ensureFilter($filter);
+        }
 
-        return $newAssetCollection;
+        foreach ($assetCollection->all() as $asset) {
+            $assetCollection->removeLeaf($asset);
+        }
+        $assetCollection->add($assetBag);
+        return $assetCollection;
     }
 
-    private function flatten(& $newAssets, $assetCollection)
+    private function flatten(array & $newAssets, AssetCollectionInterface $assetCollection)
     {
-        foreach ($assetCollection->all() as $asset) {
+        foreach ($assetCollection as $asset) {
             if ($asset instanceof AssetReference) {
+                // call the private method "resolve"
                 $getAsset = function () {
                     return $this->resolve();
                 };
                 $asset = $getAsset->call($asset);
             }
 
-            if ($asset instanceof AssetCollection) {
+            if ($asset instanceof AssetCollectionInterface) {
                 $this->flatten($newAssets, $asset);
+            } else if ($asset instanceof CHAssetBag) {
+                $this->flatten($newAssets, $asset->getBag());
             } else {
                 $newAssets[] = $asset;
             }

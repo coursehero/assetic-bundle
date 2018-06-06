@@ -102,7 +102,9 @@ class FlattenWorker implements WorkerInterface
             if ($asset instanceof AssetCollectionInterface) {
                 $this->flatten($newAssets, $asset);
             } else if ($asset instanceof CHAssetBag) {
-                $this->flatten($newAssets, $asset->getBag());
+                foreach ($asset->getBag() as $baggedAsset) {
+                    $newAssets[] = $baggedAsset;
+                }
             } else {
                 $newAssets[] = $asset;
             }

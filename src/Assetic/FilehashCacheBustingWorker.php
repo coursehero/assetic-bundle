@@ -30,26 +30,18 @@ class FilehashCacheBustingWorker extends CacheBustingWorker
     protected function getHash(AssetInterface $asset, AssetFactory $factory): string
     {
         $hash = hash_init('sha1');
-        $content = $this->getAssetContent($asset);
+        $content = $this->getUnfilteredAssetContent($asset);
         hash_update($hash, $content);
         return substr(hash_final($hash), 0, 7);
     }
 
-    protected function getAssetContent(AssetInterface $asset): string
+    protected function getUnfilteredAssetContent(AssetCollectionInterface $assetCollection): string
     {
-        // grab the actual asset, if this is a reference
-        if ($asset instanceof AssetReference) {
-            // call the private method "resolve"
-            $getAsset = function () {
-                return $this->resolve();
-            };
-            $asset = $getAsset->call($asset);
+        $cloned = clone $assetCollection;
+        foreach ($cloned as $asset) {
+            $asset->clearFilters();
         }
-
-        if (empty($asset->getContent())) {
-            $asset->load();
-        }
-
-        return $asset->getContent();
+        $cloned->load();
+        return $cloned->getContent();
     }
 }

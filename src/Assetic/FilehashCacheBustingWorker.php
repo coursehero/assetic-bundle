@@ -38,6 +38,7 @@ class FilehashCacheBustingWorker extends CacheBustingWorker
     protected function getUnfilteredAssetContent(AssetCollectionInterface $assetCollection): string
     {
         $cloned = clone $assetCollection;
+        $cloned->clearFilters();
         foreach ($cloned as $asset) {
             $asset->clearFilters();
         }

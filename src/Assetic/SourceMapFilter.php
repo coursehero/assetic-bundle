@@ -50,8 +50,6 @@ class SourceMapFilter implements FilterInterface
         $retArr = [];
         $retVal = -1;
         
-        // $mangle = true;
-        // $compress = true;
         $mangle = false;
         $compress = false;
         $extraArgs = ($mangle ? '-m' : '') . ' ' . ($compress ? '-c' : ''); // -c unused=false ?

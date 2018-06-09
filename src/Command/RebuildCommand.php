@@ -30,6 +30,8 @@ use Symfony\Component\Console\Output\OutputInterface;
  */
 class RebuildCommand extends DumpCommand
 {
+    static $assetTargetPaths;
+
     protected function configure()
     {
         $this
@@ -57,12 +59,20 @@ class RebuildCommand extends DumpCommand
         $stdout->writeln(sprintf('Debug mode is <comment>%s</comment>.', $this->am->isDebug() ? 'on' : 'off'));
         $stdout->writeln('');
 
-
+        self::$assetTargetPaths = [];
         foreach ($this->am->getNames() as $name) {
             $this->dumpAsset($name, $stdout);
         }
 
         $stdout->writeln('<comment>Finished rebuilding assets.</comment>');
+
+        if (OutputInterface::VERBOSITY_VERBOSE <= $stdout->getVerbosity()) {
+            $stdout->writeln('<comment>JavaScript assets.</comment>');
+            $this->printAssetSizes('/js\/.*\.js$/', $stdout);
+    
+            $stdout->writeln('<comment>CSS assets.</comment>');
+            $this->printAssetSizes('/css\/.*\.css$/', $stdout);
+        }
     }
 
 
@@ -102,6 +112,30 @@ class RebuildCommand extends DumpCommand
         }
     }
 
+    protected function printAssetSizes(string $regex = null, OutputInterface $stdout)
+    {
+        // /var/www/html/coursehero/src/Control/sym-assets/
+        $outputDir = rtrim(realpath($this->getContainer()->getParameter('assetic.write_to')), '/') . '/';
+        
+        $targetPathsRelativeToOutputDir = array_map(function ($path) use ($outputDir) {
+            return str_replace($outputDir, '', realpath($path));
+        }, self::$assetTargetPaths);
+
+        if ($regex) {
+            $targetPathsRelativeToOutputDir = array_filter($targetPathsRelativeToOutputDir, function ($path) use ($regex) {
+                return preg_match($regex, $path);
+            });
+        }
+
+        if (empty($targetPathsRelativeToOutputDir)) {
+            echo("no assets matching $regex\n");
+            return;
+        }
+
+        $filenameList = join(' ', $targetPathsRelativeToOutputDir);
+        $stdout->writeln(shell_exec("cd $outputDir; du -ac --apparent-size $filenameList | sort -rg"));
+    }
+
     /**
      * Performs the asset dump.
      *
@@ -124,6 +158,7 @@ class RebuildCommand extends DumpCommand
             $target = rtrim($this->basePath, '/').'/'.$asset->getTargetPath();
             $target = str_replace('_controller/', '', $target);
             $target = VarUtils::resolve($target, $asset->getVars(), $asset->getValues());
+            self::$assetTargetPaths[] = $target;
 
             if (!is_dir($dir = dirname($target))) {
                 $stdout->writeln(sprintf(

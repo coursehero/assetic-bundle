@@ -50,8 +50,8 @@ class SourceMapFilter implements FilterInterface
         $retArr = [];
         $retVal = -1;
         
-        $mangle = false;
-        $compress = false;
+        $mangle = true;
+        $compress = true;
         $extraArgs = ($mangle ? '-m' : '') . ' ' . ($compress ? '-c' : ''); // -c unused=false ?
 
         $targetPathForSourceMap = $assetBag->getAssetCollectionTargetPath() . '.map';

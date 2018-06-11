@@ -52,7 +52,7 @@ class SourceMapFilter implements FilterInterface
         
         $mangle = true;
         $compress = true;
-        $extraArgs = ($mangle ? '-m' : '') . ' ' . ($compress ? '-c' : ''); // -c unused=false ?
+        $extraArgs = ($mangle ? '-m' : '') . ' ' . ($compress ? '-c unused=false' : ''); // can't rely on what uglify thinks is 'unusued' code truly being unused
 
         $targetPathForSourceMap = $assetBag->getAssetCollectionTargetPath() . '.map';
         $sourceMapURL = $this->siteUrl . '/sym-assets/' . $targetPathForSourceMap;

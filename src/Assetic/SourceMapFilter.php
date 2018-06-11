@@ -60,6 +60,8 @@ class SourceMapFilter implements FilterInterface
         $bin = '/usr/bin/uglifyjs';
         // this is uglify-es CLI ... image is still using uglify-js for now (note: should test well if upgrading)
         // $cmd = "$bin $extraArgs --source-map \"root='coursehero:///',includeSources,url=$sourceMapURL\" -o $tmpOutput " . implode(' ', $tmpInputs);
+        
+        // uglify-js
         $cmd = "$bin $extraArgs --source-map $tmpOutput.map --source-map-url $sourceMapURL --source-map-root 'coursehero:///' --source-map-include-sources -o $tmpOutput " . implode(' ', $tmpInputs);
 
         exec($cmd, $retArr, $retVal);
@@ -68,11 +70,13 @@ class SourceMapFilter implements FilterInterface
         }
 
         if (!file_exists($tmpOutput)) {
+            $this->cleanUp($tmpOutput, $tmpInputs);
             throw new \RuntimeException('Error creating output file.');
         }
         $minifiedCode = file_get_contents($tmpOutput);
 
         if (!file_exists("$tmpOutput.map")) {
+            $this->cleanUp($tmpOutput, $tmpInputs);
             throw new \RuntimeException('Error creating source map for output file.');
         }
         $sourceMap = json_decode(file_get_contents("$tmpOutput.map"), true);
@@ -93,19 +97,23 @@ class SourceMapFilter implements FilterInterface
         $to = $this->asseticWriteToDir . '/' . $targetPathForSourceMap;
         if (!file_put_contents($to, json_encode($sourceMap))) {
             $errors = error_get_last();
+            $this->cleanUp($tmpOutput, $tmpInputs);
             throw new \Exception('issue copying source map ' . $errors['type'] . ' ' . $errors['message']);
         }
 
-        // remove temporary files
-        // TODO clean up on failure too
+        $this->cleanUp($tmpOutput, $tmpInputs);
+        
+        $assetBag->setContent($minifiedCode);
+        return $assetBag;
+    }
+
+    protected function cleanUp(string $tmpOutput, array $tmpInputs)
+    {
         unlink($tmpOutput);
         unlink("$tmpOutput.map");
         foreach ($tmpInputs as $tmpInput) {
             unlink($tmpInput);
         }
-        
-        $assetBag->setContent($minifiedCode);
-        return $assetBag;
     }
 
     // https://stackoverflow.com/a/39796579/2788187

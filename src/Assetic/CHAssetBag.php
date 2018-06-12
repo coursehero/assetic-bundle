@@ -62,14 +62,8 @@ class CHAssetBag extends BaseAsset
             return;
         }
 
-        $mtime = 0;
-        foreach ($this->bag as $asset) {
-            $assetMtime = $asset->getLastModified();
-            if ($assetMtime > $mtime) {
-                $mtime = $assetMtime;
-            }
-        }
-
-        return $mtime;
+        return max(array_map(function ($asset) {
+            return $asset->getLastModified();
+        }, $this->bag));
     }
 }

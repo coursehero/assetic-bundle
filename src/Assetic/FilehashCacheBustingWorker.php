@@ -27,11 +27,14 @@ class FilehashCacheBustingWorker extends CacheBustingWorker
         return parent::process($asset, $factory);
     }
 
-    protected function getHash(AssetInterface $asset, AssetFactory $factory): string
+    protected function getHash(AssetInterface $assetCollection, AssetFactory $factory): string
     {
         $hash = hash_init('sha1');
-        $content = $this->getUnfilteredAssetContent($asset);
+        $content = $this->getUnfilteredAssetContent($assetCollection);
         hash_update($hash, $content);
+        foreach ($assetCollection as $asset) {
+            hash_update($hash, serialize($asset->getFilters()));
+        }
         return substr(hash_final($hash), 0, 7);
     }
 

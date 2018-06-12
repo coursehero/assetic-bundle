@@ -9,6 +9,9 @@ use Assetic\Filter\FilterInterface;
 class SourceMapFilter implements FilterInterface
 {
     /** @var string */
+    private static $FILTER_HASH_BUSTER;
+
+    /** @var string */
     private $siteUrl;
 
     /** @var string */
@@ -18,6 +21,13 @@ class SourceMapFilter implements FilterInterface
     {
         $this->siteUrl = rtrim($siteUrl, '/');
         $this->asseticWriteToDir = rtrim($asseticWriteToDir, '/');
+
+        // Assetic uses the result of 'serialize' to generate the hash for an asset.
+        // this will force the hash to change when the filter source changes
+        if (!isset(self::$FILTER_HASH_BUSTER)) {
+            self::$FILTER_HASH_BUSTER = md5(file_get_contents(__FILE__));
+        }
+        $this->_FILTER_HASH_BUSTER = self::$FILTER_HASH_BUSTER;
     }
 
     public function filterLoad(AssetInterface $assetBag)
@@ -52,7 +62,7 @@ class SourceMapFilter implements FilterInterface
         
         $mangle = true;
         $compress = true;
-        $extraArgs = ($mangle ? '-m' : '') . ' ' . ($compress ? '-c unused=false' : ''); // can't rely on what uglify thinks is 'unusued' code truly being unused
+        $extraArgs = ($mangle ? '-m' : '') . ' ' . ($compress ? '-c hoist_funs=false' : '');
 
         $targetPathForSourceMap = $assetBag->getAssetCollectionTargetPath() . '.map';
         $sourceMapURL = $this->siteUrl . '/sym-assets/' . $targetPathForSourceMap;

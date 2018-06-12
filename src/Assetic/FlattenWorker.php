@@ -8,6 +8,10 @@ use Assetic\Asset\AssetReference;
 use Assetic\Factory\AssetFactory;
 use Assetic\Factory\Worker\WorkerInterface;
 
+/**
+ * Transforms an AssetCollection's assets into a CHAssetBag with applied filters based on provided rules
+ * If no rules apply, this worker will not modify the AssetCollection
+ */
 class FlattenWorker implements WorkerInterface
 {
     /** @var array [ext: string, class: string, args: array] */
@@ -41,12 +45,6 @@ class FlattenWorker implements WorkerInterface
         if ($hasBundledAppFilter) {
             return;
         }
-
-        // echo("FlattenWorker ====\n");
-        // echo("target path ". get_class($assetCollection) . ' ' . $assetCollection->getTargetPath() . "\n");
-        // foreach ($assetCollection as $asset) {
-        //     echo($asset->getSourcePath() . ' ' . get_class($asset) .  "\n");
-        // }
 
         $newAssets = [];
         $this->flatten($newAssets, $assetCollection);

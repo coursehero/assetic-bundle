@@ -11,11 +11,6 @@ use Assetic\Factory\Worker\CacheBustingWorker;
 
 /**
  * Adds cache busting based on the hash of all asset contents
- *
- *
- * TODO: Move this to open source package
- * @package CourseHero\AsseticFilehashBuster
- * @author Jason Wentworth <wentwj@gmail.com>
  */
 class FilehashCacheBustingWorker extends CacheBustingWorker
 {

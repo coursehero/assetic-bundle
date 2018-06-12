@@ -7,6 +7,18 @@ use Assetic\Asset\HttpAsset;
 use Assetic\Filter\FilterInterface;
 use Assetic\Filter\HashableInterface;
 
+/**
+ * Operates on CHAssetBags
+ *
+ * Concat, minify, and generate source maps from many JS assets
+ *
+ * This replaces the built in Uglify filter - it should no longer be used
+ *
+ * Some possible future improvements:
+ * - Upgrade to uglify-es
+ * - Allow for input sources to bring along their own source maps. Probably requires uglify-es
+ * - If above works, should be able to remove the BundledWorker/Filter and rely on this instead for TypeScript source maps
+ */
 class SourceMapFilter implements FilterInterface, HashableInterface
 {
     /** @var string */
@@ -45,6 +57,7 @@ class SourceMapFilter implements FilterInterface, HashableInterface
         // concat with uglifyjs, so the source maps are combined properly
         $tmpInputs = [];
         foreach ($parts as $i => $part) {
+            // give the tmp file a meaningful name, so that uglifyjs output can be made sense of
             $filename = pathinfo($assetBag->getBag()[$i]->getSourcePath())['filename'];
             $tmpInput = tempnam(sys_get_temp_dir(), "smf-$filename-");
             file_put_contents($tmpInput, $part);
@@ -84,8 +97,8 @@ class SourceMapFilter implements FilterInterface, HashableInterface
         }
         $sourceMap = json_decode(file_get_contents("$tmpOutput.map"), true);
 
-        // translate source file names
-        // the 'sources' property is what dev tools (such as Chrome DevTools) display as the file names for the original sources
+        // translate source filenames
+        // the 'sources' property is what dev tools (such as Chrome DevTools) display as the filename for the original source
         $sourceMap['sources'] = array_map(function ($asset) {
             if ($asset instanceof HttpAsset) {
                 return 'cdn/' . $asset->getSourcePath();

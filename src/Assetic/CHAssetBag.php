@@ -7,22 +7,10 @@ use Assetic\Asset\BaseAsset;
 use Assetic\Filter\FilterInterface;
 
 /**
- * See CHAssetFactory
- *
- * This is a custom AssetCollection that generates source maps. The default AssetCollection simply concats the input sources.
- * This custom AssetCollection passes the input sources to UglifyJS with source maps enabled.
- * This replaces the built in Uglify filter - it should no longer be used.
- * The FlattenWorker is required such that all AssetCollections, when dumped, are just a flat collection of assets.
- *
- * Some future possible improvements:
- * - Upgrade to uglify-es
- * - Allow for input sources to bring along their own source maps. Probably requires uglify-es
- * - If above works, should be able to remove the BundledWorker/Filter and rely on this instead for TypeScript source maps
- */
-
-
-/**
- * TOOD explain
+ * This is like an AssetCollection, but it is treated like an Asset. AssetCollections cannot have filters applied to them,
+ * and always dumbly concat its assets together. CHAssetBag allows for applying filters that combines multiple assets in complex ways
+ * (for example, SourceMapFilter). CHAssetBags are created by FlattenWorker, which groups an AssetCollection's assets into a single CHAssetBag,
+ * and applies a filter based on provided rules.
  */
 class CHAssetBag extends BaseAsset
 {

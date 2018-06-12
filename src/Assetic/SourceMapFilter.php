@@ -47,30 +47,54 @@ class SourceMapFilter implements FilterInterface, HashableInterface
             throw new \Exception('SourceMapFilter only works with CHAssetBag. Got ' . get_class($assetBag));
         }
 
-        // loop through leaves and dump each asset
-        $parts = [];
+        $tmpOutput = tempnam(sys_get_temp_dir(), 'output') . '.js';
+        $tmpInputs = $this->getUglifyJsInputs($assetBag);
+
+        try {
+            return $this->doFilterDump($assetBag, $tmpOutput, $tmpInputs);
+        } finally {
+            unlink($tmpOutput);
+            unlink("$tmpOutput.map");
+            foreach ($tmpInputs as $tmpInput) {
+                unlink($tmpInput);
+            }
+        }
+    }
+
+    public function hash()
+    {
+        $data = get_object_vars($this);
+
+        // asseticWriteToDir is different between build and webservers, so it must
+        // not be used in generation of the filename hash
+        unset($data['asseticWriteToDir']);
+
+        $data['class'] = self::class;
+
+        return md5(serialize($data));
+    }
+
+    protected function getUglifyJsInputs(CHAssetBag $assetBag)
+    {
+        $tmpInputs = [];
         foreach ($assetBag->getBag() as $asset) {
             $part = $asset->dump();
-            $parts[] = $part;
-        }
-
-        // concat with uglifyjs, so the source maps are combined properly
-        $tmpInputs = [];
-        foreach ($parts as $i => $part) {
+            
             // give the tmp file a meaningful name, so that uglifyjs output can be made sense of
-            $filename = pathinfo($assetBag->getBag()[$i]->getSourcePath())['filename'];
+            $filename = pathinfo($asset->getSourcePath())['filename'];
             $tmpInput = tempnam(sys_get_temp_dir(), "smf-$filename-");
+            
             file_put_contents($tmpInput, $part);
             $tmpInputs[] = $tmpInput;
         }
 
-        $tmpOutput = tempnam(sys_get_temp_dir(), 'output') . '.js';
+        return $tmpInputs;
+    }
 
-        $retArr = [];
-        $retVal = -1;
-        
+    protected function doFilterDump(CHAssetBag $assetBag, string $tmpOutput, array $tmpInputs)
+    {
         $targetPathForSourceMap = $assetBag->getAssetCollectionTargetPath() . '.map';
-        $sourceMapURL = $this->siteUrl . '/sym-assets/' . $targetPathForSourceMap;
+        $sourceMapURL = "{$this->siteUrl}/sym-assets/$targetPathForSourceMap";
         
         $bin = '/usr/bin/uglifyjs';
 
@@ -80,19 +104,19 @@ class SourceMapFilter implements FilterInterface, HashableInterface
         // uglify-js
         $cmd = "$bin {$this->uglifyOpts} --source-map $tmpOutput.map --source-map-url $sourceMapURL --source-map-root 'coursehero:///' --source-map-include-sources -o $tmpOutput " . implode(' ', $tmpInputs);
 
+        $retArr = [];
+        $retVal = -1;
         exec($cmd, $retArr, $retVal);
         if ($retVal !== 0) {
             throw new \Exception(implode("\n", $retArr));
         }
 
         if (!file_exists($tmpOutput)) {
-            $this->cleanUp($tmpOutput, $tmpInputs);
             throw new \RuntimeException('Error creating output file.');
         }
         $minifiedCode = file_get_contents($tmpOutput);
 
         if (!file_exists("$tmpOutput.map")) {
-            $this->cleanUp($tmpOutput, $tmpInputs);
             throw new \RuntimeException('Error creating source map for output file.');
         }
         $sourceMap = json_decode(file_get_contents("$tmpOutput.map"), true);
@@ -113,36 +137,11 @@ class SourceMapFilter implements FilterInterface, HashableInterface
         $to = $this->asseticWriteToDir . '/' . $targetPathForSourceMap;
         if (!file_put_contents($to, json_encode($sourceMap))) {
             $errors = error_get_last();
-            $this->cleanUp($tmpOutput, $tmpInputs);
             throw new \Exception('issue copying source map ' . $errors['type'] . ' ' . $errors['message']);
         }
-
-        $this->cleanUp($tmpOutput, $tmpInputs);
         
         $assetBag->setContent($minifiedCode);
         return $assetBag;
-    }
-
-    public function hash()
-    {
-        $data = get_object_vars($this);
-
-        // asseticWriteToDir is different between build and webservers, so it must
-        // not be used in generation of the filename hash
-        unset($data['asseticWriteToDir']);
-
-        $data['class'] = self::class;
-
-        return md5(serialize($data));
-    }
-
-    protected function cleanUp(string $tmpOutput, array $tmpInputs)
-    {
-        unlink($tmpOutput);
-        unlink("$tmpOutput.map");
-        foreach ($tmpInputs as $tmpInput) {
-            unlink($tmpInput);
-        }
     }
 
     // https://stackoverflow.com/a/39796579/2788187

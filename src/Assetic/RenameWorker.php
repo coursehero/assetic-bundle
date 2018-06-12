@@ -26,7 +26,7 @@ class RenameWorker implements WorkerInterface
 
         foreach ($assetCollection->all() as $asset) {
             $matches = [];
-            if (preg_match("/js\/dist\/(.*)\\.js/i", $asset->getSourcePath(), $matches)) {
+            if (preg_match("/js\/dist\/(.*)\\.js$/i", $asset->getSourcePath(), $matches)) {
                 $appName = str_replace('/', '-', $matches[1]);
                 break;
             }
@@ -35,7 +35,7 @@ class RenameWorker implements WorkerInterface
         $appName = $appName ?? 'bundle';
 
         if (strpos($assetCollection->getTargetPath(), 'js/' . $appName) === false) {
-            $newTargetPath = str_replace('js/', 'js/' . $appName . '-', $assetCollection->getTargetPath());
+            $newTargetPath = str_replace('js/', "js/$appName-", $assetCollection->getTargetPath());
             
             // this target path is just part of the end result
             // the second hash (the cache busting part of the file name) is applied later by the cache busting worker

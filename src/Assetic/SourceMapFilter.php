@@ -31,7 +31,7 @@ class SourceMapFilter implements FilterInterface
     public function filterDump(AssetInterface $assetBag)
     {
         if (!($assetBag instanceof CHAssetBag)) {
-            throw new \Exception('SourceMapFilter only works with CHAssetBag. Got ' . get_class($asset));
+            throw new \Exception('SourceMapFilter only works with CHAssetBag. Got ' . get_class($assetBag));
         }
 
         // loop through leaves and dump each asset
@@ -43,8 +43,9 @@ class SourceMapFilter implements FilterInterface
 
         // concat with uglifyjs, so the source maps are combined properly
         $tmpInputs = [];
-        foreach ($parts as $part) {
-            $tmpInput = tempnam(sys_get_temp_dir(), 'input');
+        foreach ($parts as $i => $part) {
+            $filename = pathinfo($assetBag->getBag()[$i]->getSourcePath())['filename'];
+            $tmpInput = tempnam(sys_get_temp_dir(), "smf-$filename-");
             file_put_contents($tmpInput, $part);
             $tmpInputs[] = $tmpInput;
         }
@@ -64,7 +65,6 @@ class SourceMapFilter implements FilterInterface
         
         // uglify-js
         $cmd = "$bin {$this->uglifyOpts} --source-map $tmpOutput.map --source-map-url $sourceMapURL --source-map-root 'coursehero:///' --source-map-include-sources -o $tmpOutput " . implode(' ', $tmpInputs);
-        echo("$cmd\n");
 
         exec($cmd, $retArr, $retVal);
         if ($retVal !== 0) {

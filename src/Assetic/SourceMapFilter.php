@@ -9,25 +9,19 @@ use Assetic\Filter\FilterInterface;
 class SourceMapFilter implements FilterInterface
 {
     /** @var string */
-    private static $FILTER_HASH_BUSTER;
-
-    /** @var string */
     private $siteUrl;
 
     /** @var string */
     private $asseticWriteToDir;
 
-    public function __construct(string $siteUrl, string $asseticWriteToDir)
+    /** @var string */
+    private $uglifyOpts;
+
+    public function __construct(string $siteUrl, string $asseticWriteToDir, string $uglifyOpts = '')
     {
         $this->siteUrl = rtrim($siteUrl, '/');
         $this->asseticWriteToDir = rtrim($asseticWriteToDir, '/');
-
-        // Assetic uses the result of 'serialize' to generate the hash for an asset.
-        // this will force the hash to change when the filter source changes
-        if (!isset(self::$FILTER_HASH_BUSTER)) {
-            self::$FILTER_HASH_BUSTER = md5(file_get_contents(__FILE__));
-        }
-        $this->_FILTER_HASH_BUSTER = self::$FILTER_HASH_BUSTER;
+        $this->uglifyOpts = $uglifyOpts;
     }
 
     public function filterLoad(AssetInterface $assetBag)
@@ -60,19 +54,17 @@ class SourceMapFilter implements FilterInterface
         $retArr = [];
         $retVal = -1;
         
-        $mangle = true;
-        $compress = true;
-        $extraArgs = ($mangle ? '-m' : '') . ' ' . ($compress ? '-c hoist_funs=false' : '');
-
         $targetPathForSourceMap = $assetBag->getAssetCollectionTargetPath() . '.map';
         $sourceMapURL = $this->siteUrl . '/sym-assets/' . $targetPathForSourceMap;
         
         $bin = '/usr/bin/uglifyjs';
+
         // this is uglify-es CLI ... image is still using uglify-js for now (note: should test well if upgrading)
-        // $cmd = "$bin $extraArgs --source-map \"root='coursehero:///',includeSources,url=$sourceMapURL\" -o $tmpOutput " . implode(' ', $tmpInputs);
+        // $cmd = "$bin {$this->uglifyOpts} --source-map \"root='coursehero:///',includeSources,url=$sourceMapURL\" -o $tmpOutput " . implode(' ', $tmpInputs);
         
         // uglify-js
-        $cmd = "$bin $extraArgs --source-map $tmpOutput.map --source-map-url $sourceMapURL --source-map-root 'coursehero:///' --source-map-include-sources -o $tmpOutput " . implode(' ', $tmpInputs);
+        $cmd = "$bin {$this->uglifyOpts} --source-map $tmpOutput.map --source-map-url $sourceMapURL --source-map-root 'coursehero:///' --source-map-include-sources -o $tmpOutput " . implode(' ', $tmpInputs);
+        echo("$cmd\n");
 
         exec($cmd, $retArr, $retVal);
         if ($retVal !== 0) {

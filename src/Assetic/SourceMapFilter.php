@@ -5,8 +5,9 @@ namespace CourseHero\UtilsBundle\Assetic;
 use Assetic\Asset\AssetInterface;
 use Assetic\Asset\HttpAsset;
 use Assetic\Filter\FilterInterface;
+use Assetic\Filter\HashableInterface;
 
-class SourceMapFilter implements FilterInterface
+class SourceMapFilter implements FilterInterface, HashableInterface
 {
     /** @var string */
     private $siteUrl;
@@ -107,6 +108,19 @@ class SourceMapFilter implements FilterInterface
         
         $assetBag->setContent($minifiedCode);
         return $assetBag;
+    }
+
+    public function hash()
+    {
+        $data = get_object_vars($this);
+
+        // asseticWriteToDir is different between build and webservers, so it must
+        // not be used in generation of the filename hash
+        unset($data['asseticWriteToDir']);
+
+        $data['class'] = self::class;
+
+        return md5(serialize($data));
     }
 
     protected function cleanUp(string $tmpOutput, array $tmpInputs)

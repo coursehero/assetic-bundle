@@ -5,6 +5,7 @@ namespace CourseHero\UtilsBundle\Assetic;
 use Assetic\Asset\AssetCollectionInterface;
 use Assetic\Asset\AssetInterface;
 use Assetic\Asset\AssetReference;
+use Assetic\Filter\HashableInterface;
 use Assetic\Factory\AssetFactory;
 use Assetic\Factory\Worker\CacheBustingWorker;
 
@@ -32,9 +33,15 @@ class FilehashCacheBustingWorker extends CacheBustingWorker
         $hash = hash_init('sha1');
         $content = $this->getUnfilteredAssetContent($assetCollection);
         hash_update($hash, $content);
+
+        // Assetic generates a hash for the filters applied before workers, but not after
         foreach ($assetCollection as $asset) {
-            hash_update($hash, serialize($asset->getFilters()));
+            foreach ($asset->getFilters() as $filter) {
+                $filterHash = $filter instanceof HashableInterface ? $filter->hash() : serialize($filter);
+                hash_update($hash, $filterHash);
+            }
         }
+
         return substr(hash_final($hash), 0, 7);
     }
 

@@ -67,10 +67,10 @@ class RebuildCommand extends DumpCommand
         $stdout->writeln('<comment>Finished rebuilding assets.</comment>');
 
         if (OutputInterface::VERBOSITY_VERBOSE <= $stdout->getVerbosity()) {
-            $stdout->writeln('<comment>JavaScript assets.</comment>');
+            $stdout->writeln('<comment>JavaScript assets (KB)</comment>');
             $this->printAssetSizes('/js\/.*\.js$/', $stdout);
     
-            $stdout->writeln('<comment>CSS assets.</comment>');
+            $stdout->writeln('<comment>CSS assets (KB)</comment>');
             $this->printAssetSizes('/css\/.*\.css$/', $stdout);
         }
     }

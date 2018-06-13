@@ -32,11 +32,13 @@ class FilehashCacheBustingWorker extends CacheBustingWorker
         // Assetic generates a hash for the filters applied before workers, but not after
         // only applies to CHAssetBag
         foreach ($assetCollection as $asset) {
-            if ($asset instanceof CHAssetBag) {
-                foreach ($asset->getFilters() as $filter) {
-                    $filterHash = $filter instanceof HashableInterface ? $filter->hash() : serialize($filter);
-                    hash_update($hash, $filterHash);
-                }
+            if (!$asset instanceof CHAssetBag) {
+                continue;
+            }
+            
+            foreach ($asset->getFilters() as $filter) {
+                $filterHash = $filter instanceof HashableInterface ? $filter->hash() : serialize($filter);
+                hash_update($hash, $filterHash);
             }
         }
 

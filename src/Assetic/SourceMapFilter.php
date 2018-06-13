@@ -26,15 +26,19 @@ class SourceMapFilter implements FilterInterface, HashableInterface
 
     /** @var string */
     private $asseticWriteToDir;
+    
+    /** @var string */
+    private $sourceMapSourcePathTrim;
 
     /** @var string */
     private $uglifyOpts;
 
-    public function __construct(string $siteUrl, string $asseticWriteToDir, string $uglifyOpts = '')
+    public function __construct(array $options)
     {
-        $this->siteUrl = rtrim($siteUrl, '/');
-        $this->asseticWriteToDir = rtrim($asseticWriteToDir, '/');
-        $this->uglifyOpts = $uglifyOpts;
+        $this->siteUrl = rtrim($options['site_url'], '/');
+        $this->asseticWriteToDir = rtrim($options['assetic_write_to'], '/');
+        $this->sourceMapSourcePathTrim = $options['source_map_source_path_trim'] ?? '';
+        $this->uglifyOpts = $options['uglifyOpts'] ?? '';
     }
 
     public function filterLoad(AssetInterface $assetBag)
@@ -128,16 +132,21 @@ class SourceMapFilter implements FilterInterface, HashableInterface
                 return 'cdn/' . $asset->getSourcePath();
             }
             
+            // remove relative path elements
             $sourceFullPath = $this->getAbsoluteFilename($asset->getSourceRoot() . $asset->getSourcePath());
-            return substr($sourceFullPath, strlen('/var/www/html/coursehero/src/'));
+            
+            // remove the first part of the path - what's left should be relative to the root project directory
+            $sourceFullPath = preg_replace("#^{$this->sourceMapSourcePathTrim}#", '', $sourceFullPath);
+            
+            return $sourceFullPath;
         }, $assetBag->getBag());
         $sourceMap['sources'] = array_values($sourceMap['sources']);
 
         // save the source map to the sym-assets folder
         $to = $this->asseticWriteToDir . '/' . $targetPathForSourceMap;
         if (!file_put_contents($to, json_encode($sourceMap))) {
-            $errors = error_get_last();
-            throw new \Exception('issue copying source map ' . $errors['type'] . ' ' . $errors['message']);
+            $error = error_get_last();
+            throw new \Exception('issue copying source map ' . $error['type'] . ' ' . $error['message']);
         }
         
         $assetBag->setContent($minifiedCode);

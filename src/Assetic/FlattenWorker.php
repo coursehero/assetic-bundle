@@ -50,10 +50,8 @@ class FlattenWorker implements WorkerInterface
         $this->flatten($newAssets, $assetCollection);
 
         $applicableFilterRules = array_filter($this->filterRules, function ($filterRule) use ($newAssets) {
-            $ext = $filterRule['ext'];
-            $regex = "/$ext$/";
             foreach ($newAssets as $asset) {
-                if (!preg_match($regex, $asset->getSourcePath())) {
+                if (!preg_match($filterRule['match'], $asset->getSourcePath())) {
                     return false;
                 }
             }

@@ -186,7 +186,8 @@ class RebuildCommand extends DumpCommand
                             foreach ($leaf->getBag() as $singleAsset) {
                                 $root = $singleAsset->getSourceRoot();
                                 $path = $singleAsset->getSourcePath();
-                                $stdout->writeln(sprintf('        <comment>%s/%s</comment>', $root ?: '[unknown root]', $path ?: '[unknown path]'));
+                                $size = strlen($singleAsset->getContent()) / 1000;
+                                $stdout->writeln(sprintf('        <comment>%s/%s (%d kb)</comment>', $root ?: '[unknown root]', $path ?: '[unknown path]', $size));
                             }
                         } else {
                             $root = $leaf->getSourceRoot();

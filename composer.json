@@ -1,0 +1,42 @@
+{
+  "name": "coursehero/assetic-bundle",
+  "homepage": "https://github.com/coursehero/assetic-bundle",
+  "description": "Course Hero's Assetic tools bundle",
+  "keywords": [
+    "assetic",
+    "source maps",
+    "cache busting",
+    "symfony"
+  ],
+  "type": "symfony-bundle",
+  "license": "Apache-2.0",
+  "authors": [
+    {
+      "name": "Connor Clark",
+      "email": "cjamcl@gmail.com"
+    },
+    {
+      "name": "Jason Wentworth",
+      "email": "jwentworth@coursehero.com"
+    }
+  ],
+  "require": {
+    "kriswallsmith/assetic": "~1.2|~1.4",
+    "php": ">=7.0"
+  },
+  "require-dev": {
+    "php-coveralls/php-coveralls": "^2.1",
+    "squizlabs/php_codesniffer": "3.*",
+    "phpunit/phpunit": "^5.7"
+  },
+  "autoload": {
+    "psr-4": {
+      "CourseHero\\AsseticBundle\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "CourseHero\\AsseticBundle\\": "tests/"
+    }
+  }
+}

@@ -1,13 +1,13 @@
 <?php
 
-namespace CourseHero\UtilsBundle\Assetic;
+namespace CourseHero\AsseticBundle\Assetic;
 
 use Assetic\Asset\AssetCollectionInterface;
 use Assetic\Asset\AssetInterface;
 use Assetic\Asset\AssetReference;
 use Assetic\Factory\AssetFactory;
 use Assetic\Factory\Worker\WorkerInterface;
-use CourseHero\UtilsBundle\Assetic\BundledAppFilter;
+use CourseHero\AsseticBundle\Assetic\BundledAppFilter;
 
 class BundledAppWorker implements WorkerInterface
 {

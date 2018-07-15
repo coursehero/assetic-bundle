@@ -1,13 +1,13 @@
 <?php
 
-namespace CourseHero\UtilsBundle\Assetic;
+namespace CourseHero\AsseticBundle\Assetic;
 
 use Assetic\Asset\AssetCollectionInterface;
 use Assetic\Asset\AssetInterface;
 use Assetic\Asset\AssetReference;
-use Assetic\Filter\HashableInterface;
 use Assetic\Factory\AssetFactory;
 use Assetic\Factory\Worker\CacheBustingWorker;
+use Assetic\Filter\HashableInterface;
 
 /**
  * Adds cache busting based on the hash of all asset contents

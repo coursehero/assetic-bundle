@@ -1,6 +1,6 @@
 <?php
 
-namespace CourseHero\UtilsBundle\Assetic;
+namespace CourseHero\AsseticBundle\Assetic;
 
 use Assetic\Asset\AssetInterface;
 use Assetic\Filter\FilterInterface;

@@ -9,12 +9,12 @@
  * with this source code in the file LICENSE.
  */
 
-namespace CourseHero\UtilsBundle\Command;
+namespace CourseHero\AsseticBundle\Command;
 
 use Assetic\Asset\AssetCollectionInterface;
 use Assetic\Asset\AssetInterface;
 use Assetic\Util\VarUtils;
-use CourseHero\UtilsBundle\Assetic\CHAssetBag;
+use CourseHero\AsseticBundle\Assetic\CHAssetBag;
 use Symfony\Bundle\AsseticBundle\Command\DumpCommand;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Input\InputArgument;

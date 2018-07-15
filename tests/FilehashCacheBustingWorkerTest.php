@@ -24,10 +24,7 @@ class FilehashCacheBustingWorkerTest extends TestCase
         $this->worker = null;
     }
 
-    /**
-     * @test
-     */
-    public function shouldHashIndividualFile(){
+    public function testHashIndividualFile(){
         $factory = $this->createMock(AssetFactory::class);
 
         $collection = new AssetCollection();
@@ -38,10 +35,7 @@ class FilehashCacheBustingWorkerTest extends TestCase
         $this->assertEquals($collection->getTargetPath(), 'testAsset-019b8b3.txt');
     }
 
-    /**
-     * @test
-     */
-    public function shouldHashMultipleFiles(){
+    public function testHashMultipleFiles(){
         $factory = $this->createMock(AssetFactory::class);
 
         $collection = new AssetCollection();

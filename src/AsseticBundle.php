@@ -1,6 +1,6 @@
 <?php
 
-namespace CourseHero\Assetic;
+namespace CourseHero\AsseticBundle;
 
 use Symfony\Component\HttpKernel\Bundle\Bundle;
 

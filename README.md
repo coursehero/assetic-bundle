@@ -1,4 +1,4 @@
-# Course Hero Assetic Bundle &middot; [![GitHub license](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](https://github.com/course-hero/assetic-bundle/blob/master/LICENSE) [![Build Status](https://travis-ci.org/coursehero/assetic-bundle.svg?branch=master)](https://travis-ci.org/coursehero/assetic-bundle) [![Coverage Status](https://coveralls.io/repos/github/course-hero/assetic-bundle/badge.svg?branch=master)](https://coveralls.io/github/course-hero/assetic-bundle?branch=master)
+# Course Hero Assetic Bundle &middot; [![GitHub license](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](https://github.com/course-hero/assetic-bundle/blob/master/LICENSE) [![Build Status](https://travis-ci.org/coursehero/assetic-bundle.svg?branch=master)](https://travis-ci.org/coursehero/assetic-bundle) [![Coverage Status](https://coveralls.io/repos/github/coursehero/assetic-bundle/badge.svg?branch=master)](https://coveralls.io/github/coursehero/assetic-bundle?branch=master)
 
 Useful Assetic utilities, including:
 

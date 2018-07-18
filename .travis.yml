@@ -1,15 +1,26 @@
+sudo: required
+
+services:
+  - docker
+
 language: php
+
 php:
   - 7.0
   - 7.1
+
 directories:
   - $HOME/.composer/cache/files
+
 before_install:
-  - npm install -g uglify-js@2.8.29
+  - docker build . -t coursehero-assetic-bundle-dev
+
 install:
   - travis_retry composer install
+
 script:
   - mkdir -p build/logs
-  - php vendor/bin/phpunit
+  - composer test
+
 after_success:
   - travis_retry php vendor/bin/php-coveralls -v

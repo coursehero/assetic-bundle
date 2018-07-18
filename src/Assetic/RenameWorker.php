@@ -7,6 +7,8 @@ use Assetic\Asset\AssetInterface;
 use Assetic\Factory\AssetFactory;
 use Assetic\Factory\Worker\WorkerInterface;
 
+// TODO: make configurable
+
 class RenameWorker implements WorkerInterface
 {
     public function process(AssetInterface $assetCollection, AssetFactory $factory)

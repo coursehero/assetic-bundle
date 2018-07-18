@@ -4,6 +4,8 @@ php:
   - 7.1
 directories:
   - $HOME/.composer/cache/files
+before_install:
+  - npm install -g uglify-js@2.8.29
 install:
   - travis_retry composer install
 script:

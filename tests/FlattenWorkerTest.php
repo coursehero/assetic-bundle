@@ -10,12 +10,12 @@ use Assetic\Factory\AssetFactory;
 use Assetic\Filter\FilterInterface;
 use CourseHero\AsseticBundle\Assetic\CHAssetBag;
 use CourseHero\AsseticBundle\Assetic\FlattenWorker;
-use PHPUnit\Framework\Assert;
 use PHPUnit\Framework\TestCase;
 
 class FlattenWorkerTest extends TestCase
 {
-    public function testAssetsUnchangedWithNoMatchingFilter(){
+    public function testAssetsUnchangedWithNoMatchingFilter()
+    {
         $worker = new FlattenWorker([
             [
                 'match' => '/\.js$/',
@@ -35,7 +35,8 @@ class FlattenWorkerTest extends TestCase
         $this->assertNull($collection);
     }
 
-    public function testAssetsUnchangedWithSomeNotMatchingFilter(){
+    public function testAssetsUnchangedWithSomeNotMatchingFilter()
+    {
         $worker = new FlattenWorker([
             [
                 'match' => '/\.txt$/',
@@ -55,7 +56,8 @@ class FlattenWorkerTest extends TestCase
         $this->assertNull($collection);
     }
 
-    public function testMovesAllAssetsToAssetBagWhenMatchingFilter(){
+    public function testMovesAllAssetsToAssetBagWhenMatchingFilter()
+    {
         $worker = new FlattenWorker([
             [
                 'match' => '/\.txt$/',
@@ -81,22 +83,29 @@ class FlattenWorkerTest extends TestCase
         $this->assertEquals($assetBag->getFilters()[0]->vars, [1, 'two', 3]);
     }
 
-    private function makeAsset($sourcePath) {
+    private function makeAsset($sourcePath)
+    {
         $asset = new StringAsset("string asset for $sourcePath", [], null, $sourcePath);
         return $asset;
     }
 }
 
-class TestFilter implements FilterInterface {
+class TestFilter implements FilterInterface
+{
     public $vars = [];
 
-    public function __construct(int $arg1, string $arg2, int $arg3) {
+    public function __construct(int $arg1, string $arg2, int $arg3)
+    {
         $this->vars[] = $arg1;
         $this->vars[] = $arg2;
         $this->vars[] = $arg3;
     }
 
-    public function filterLoad(AssetInterface $asset) {}
+    public function filterLoad(AssetInterface $asset)
+    {
+    }
 
-    public function filterDump(AssetInterface $asset) {}
+    public function filterDump(AssetInterface $asset)
+    {
+    }
 }

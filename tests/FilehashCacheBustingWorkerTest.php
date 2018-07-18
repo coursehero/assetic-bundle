@@ -7,7 +7,6 @@ use Assetic\Asset\AssetCollection;
 use Assetic\Asset\FileAsset;
 use Assetic\Factory\AssetFactory;
 use CourseHero\AsseticBundle\Assetic\FilehashCacheBustingWorker;
-use PHPUnit\Framework\Assert;
 use PHPUnit\Framework\TestCase;
 
 class FilehashCacheBustingWorkerTest extends TestCase
@@ -24,7 +23,8 @@ class FilehashCacheBustingWorkerTest extends TestCase
         $this->worker = null;
     }
 
-    public function testHashIndividualFile(){
+    public function testHashIndividualFile()
+    {
         $factory = $this->createMock(AssetFactory::class);
 
         $collection = new AssetCollection();
@@ -35,7 +35,8 @@ class FilehashCacheBustingWorkerTest extends TestCase
         $this->assertEquals($collection->getTargetPath(), 'testAsset-019b8b3.txt');
     }
 
-    public function testHashMultipleFiles(){
+    public function testHashMultipleFiles()
+    {
         $factory = $this->createMock(AssetFactory::class);
 
         $collection = new AssetCollection();
@@ -45,6 +46,5 @@ class FilehashCacheBustingWorkerTest extends TestCase
 
         $this->worker->process($collection, $factory);
         $this->assertEquals($collection->getTargetPath(), 'testAsset-ff6345f.txt');
-
     }
 }

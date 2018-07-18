@@ -12,7 +12,7 @@ use PHPUnit\Framework\TestCase;
 
 class SourceMapFilterTest extends TestCase
 {
-    public function testStub()
+    public function testSourceMapFilter()
     {
         $asseticWriteTo = sys_get_temp_dir();
         $worker = new FlattenWorker([

@@ -14,7 +14,7 @@ use Assetic\Factory\Worker\WorkerInterface;
  */
 class FlattenWorker implements WorkerInterface
 {
-    /** @var array [ext: string, class: string, args: array] */
+    /** @var array [match: string, class: string, args: array] */
     private $filterRules;
 
     public function __construct(array $filterRules)

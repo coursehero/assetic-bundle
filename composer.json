@@ -20,6 +20,9 @@
       "email": "jwentworth@coursehero.com"
     }
   ],
+  "scripts": {
+    "test": "./vendor/bin/phpunit"
+  },
   "require": {
     "kriswallsmith/assetic": "~1.2|~1.4",
     "php": ">=7.0"

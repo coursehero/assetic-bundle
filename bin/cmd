@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+
+docker build . -t coursehero-assetic-bundle-dev
+
+touch ~/.coursehero_assetic_bundle_bash_history
+docker run --rm -it -v $(pwd):/test -v ~/.coursehero_assetic_bundle_bash_history:/root/.bash_history -w /test coursehero-assetic-bundle-dev bash

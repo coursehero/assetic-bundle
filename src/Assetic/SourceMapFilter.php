@@ -25,10 +25,16 @@ class SourceMapFilter implements FilterInterface, HashableInterface
     private $siteUrl;
 
     /** @var string */
+    private $sourceMapRoot;
+
+    /** @var string */
     private $asseticWriteToDir;
     
     /** @var string */
     private $sourceMapSourcePathTrim;
+
+    /** @var string */
+    private $uglifyBin;
 
     /** @var string */
     private $uglifyOpts;
@@ -36,9 +42,11 @@ class SourceMapFilter implements FilterInterface, HashableInterface
     public function __construct(array $options)
     {
         $this->siteUrl = rtrim($options['site_url'], '/');
+        $this->sourceMapRoot = $options['source_map_root'] ?? 'sources:///';
         $this->asseticWriteToDir = rtrim($options['assetic_write_to'], '/');
         $this->sourceMapSourcePathTrim = $options['source_map_source_path_trim'] ?? '';
-        $this->uglifyOpts = $options['uglifyOpts'] ?? '';
+        $this->uglifyBin = $options['uglify_bin'] ?? 'uglifyjs'; // only version 2 is supported
+        $this->uglifyOpts = $options['uglify_opts'] ?? '';
     }
 
     public function filterLoad(AssetInterface $assetBag)
@@ -99,14 +107,12 @@ class SourceMapFilter implements FilterInterface, HashableInterface
     {
         $targetPathForSourceMap = $assetBag->getAssetCollectionTargetPath() . '.map';
         $sourceMapURL = "{$this->siteUrl}/sym-assets/$targetPathForSourceMap";
-        
-        $bin = '/usr/bin/uglifyjs';
 
         // this is uglify-es CLI ... image is still using uglify-js for now (note: should test well if upgrading)
         // $cmd = "$bin {$this->uglifyOpts} --source-map \"root='coursehero:///',includeSources,url=$sourceMapURL\" -o $tmpOutput " . implode(' ', $tmpInputs);
         
         // uglify-js
-        $cmd = "$bin {$this->uglifyOpts} --source-map $tmpOutput.map --source-map-url $sourceMapURL --source-map-root 'coursehero:///' --source-map-include-sources -o $tmpOutput " . implode(' ', $tmpInputs);
+        $cmd = "{$this->uglifyBin} {$this->uglifyOpts} --source-map $tmpOutput.map --source-map-url $sourceMapURL --source-map-root '{$this->sourceMapRoot}' --source-map-include-sources -o $tmpOutput " . implode(' ', $tmpInputs);
 
         $retArr = [];
         $retVal = -1;

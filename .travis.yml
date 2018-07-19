@@ -8,7 +8,7 @@ directories:
   - $HOME/.composer/cache/files
 
 before_install:
-  - npm install -g uglify-js@2.8.29
+  - npm install -g uglify-js@3.4.5
 
 install:
   - travis_retry composer install

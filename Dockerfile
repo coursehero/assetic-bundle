@@ -23,4 +23,4 @@ RUN /bin/bash -c "source $NVM_DIR/nvm.sh \
 ENV NODE_PATH $NVM_DIR/v$NODE_VERSION/lib/node_modules
 ENV PATH $NVM_DIR/versions/node/v$NODE_VERSION/bin:$PATH
 
-RUN npm install -g uglify-es@3.3.9
+RUN npm install -g uglify-js@3.4.5

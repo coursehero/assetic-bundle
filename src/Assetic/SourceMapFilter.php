@@ -44,7 +44,7 @@ class SourceMapFilter implements FilterInterface, HashableInterface
         $this->sourceMapRoot = $options['source_map_root'] ?? 'sources:///';
         $this->asseticWriteToDir = rtrim($options['assetic_write_to'], '/');
         $this->sourceMapSourcePathTrim = $options['source_map_source_path_trim'] ?? '';
-        $this->uglifyBin = $options['uglify_bin'] ?? 'uglifyjs'; // must be uglify-es
+        $this->uglifyBin = $options['uglify_bin'] ?? 'uglifyjs'; // must be uglify-js >= 3.0
         $this->uglifyOpts = $options['uglify_opts'] ?? '';
     }
 

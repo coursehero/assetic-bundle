@@ -108,11 +108,11 @@ class SourceMapFilter implements FilterInterface, HashableInterface
         $targetPathForSourceMap = $assetCollectionTargetPath . '.map';
         $sourceMapURL = "{$this->siteUrl}/$targetPathForSourceMap";
 
-        $cmd = "{$this->uglifyBin} {$this->uglifyOpts} --source-map \"root='{$this->sourceMapRoot}',includeSources,url=$sourceMapURL,filename='$assetCollectionTargetPath'\" -o $tmpOutput " . implode(' ', $tmpInputs);
+        $cmd = "{$this->uglifyBin} {$this->uglifyOpts} --source-map \"content=inline,root='{$this->sourceMapRoot}',includeSources,url=$sourceMapURL,filename='$assetCollectionTargetPath'\" -o $tmpOutput " . implode(' ', $tmpInputs);
 
         $retArr = [];
         $retVal = -1;
-        exec($cmd, $retArr, $retVal);
+        exec("$cmd 2>&1", $retArr, $retVal);
         if ($retVal !== 0) {
             throw new \Exception(implode("\n", $retArr));
         }

@@ -1,0 +1,20 @@
+{
+  "version": 3,
+  "sources": [
+    "/asset1.js",
+    "/asset2.js",
+    "/asset3.js"
+  ],
+  "names": [
+    "console",
+    "log"
+  ],
+  "mappings": "AAAAA,QAAQC,IAAI,8BCAZD,QAAQC,IAAI,8BCAZD,QAAQC,IAAI",
+  "file": "asset.js",
+  "sourceRoot": "sources:///",
+  "sourcesContent": [
+    "console.log('string asset for asset1.js');",
+    "console.log('string asset for asset2.js');",
+    "console.log('string asset for asset3.js');"
+  ]
+}

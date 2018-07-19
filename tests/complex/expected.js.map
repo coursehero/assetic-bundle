@@ -2,7 +2,7 @@
     "version": 3,
     "sources": [
         "\/asset1.js",
-        "tests\/test.js",
+        "tests\/complex\/test.js",
         "cdn\/ajax\/libs\/moment.js\/2.22.2\/moment.js"
     ],
     "names": [

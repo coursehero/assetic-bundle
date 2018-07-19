@@ -38,17 +38,10 @@ class SourceMapFilterTest extends TestCase
         $collection->add($this->makeStringAsset('asset3.js'));
         $collection = $worker->process($collection, $factory);
 
-        $this->assertEquals(<<<EOT
-console.log("string asset for asset1.js");console.log("string asset for asset2.js");console.log("string asset for asset3.js");
-//# sourceMappingURL=www.coursehero.com/sym-assets/asset.js.map
-EOT
-        , $collection->dump());
+        $this->assertEquals(file_get_contents('tests/simple/expected.js'), $collection->dump());
         
-        $sourceMap = file_get_contents("$asseticWriteTo/asset.js.map");
-        $this->assertEquals(<<<EOT
-{"version":3,"sources":["\/asset1.js","\/asset2.js","\/asset3.js"],"names":["console","log"],"mappings":"AAAAA,QAAQC,IAAI,8BCAZD,QAAQC,IAAI,8BCAZD,QAAQC,IAAI","file":"asset.js","sourceRoot":"sources:\/\/\/","sourcesContent":["console.log('string asset for asset1.js');","console.log('string asset for asset2.js');","console.log('string asset for asset3.js');"]}
-EOT
-        , $sourceMap);
+        $sourceMap = $this->loadSourceMap("$asseticWriteTo/asset.js.map");
+        $this->assertEquals($this->loadSourceMap('tests/simple/expected.js.map'), $sourceMap);
     }
 
     public function testSourceMapFilterComplex()
@@ -71,14 +64,43 @@ EOT
         $collection = new AssetCollection();
         $collection->setTargetPath('expected.js');
         $collection->add($this->makeStringAsset('asset1.js'));
-        $collection->add(new FileAsset(dirname(__FILE__) . '/test.js'));
+        $collection->add(new FileAsset(dirname(__FILE__) . '/complex/test.js'));
         $collection->add(new HttpAsset('https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.22.2/moment.js'));
         $collection = $worker->process($collection, $factory);
 
-        $this->assertEquals(file_get_contents('tests/expected.js'), $collection->dump());
+        $this->assertEquals(file_get_contents('tests/complex/expected.js'), $collection->dump());
         
         $sourceMap = $this->loadSourceMap("$asseticWriteTo/expected.js.map");
-        $this->assertEquals($this->loadSourceMap('tests/expected.js.map'), $sourceMap);
+        $this->assertEquals($this->loadSourceMap('tests/complex/expected.js.map'), $sourceMap);
+    }
+
+    // uglifyjs can use an input file's source map, if provided inline
+    public function testSourceMapFilterComposedSourceMap()
+    {
+        $asseticWriteTo = sys_get_temp_dir();
+        $worker = new FlattenWorker([
+            [
+                'match' => '/\.js$/',
+                'class' => SourceMapFilter::class,
+                'args' => [[
+                    'site_url' => 'www.coursehero.com/sym-assets',
+                    'assetic_write_to' => $asseticWriteTo
+                ]]
+            ]
+        ]);
+        
+        $factory = $this->createMock(AssetFactory::class);
+
+        $collection = new AssetCollection();
+        $collection->setTargetPath('composed.js');
+        $collection->add($this->makeStringAsset('asset1.js'));
+        $collection->add(new FileAsset(dirname(__FILE__) . '/composed/ts.js'));
+        $collection = $worker->process($collection, $factory);
+
+        $this->assertEquals(file_get_contents('tests/composed/expected.js'), $collection->dump());
+        
+        $sourceMap = $this->loadSourceMap("$asseticWriteTo/composed.js.map");
+        $this->assertEquals($this->loadSourceMap('tests/composed/expected.js.map'), $sourceMap);
     }
 
     private function loadSourceMap($path)

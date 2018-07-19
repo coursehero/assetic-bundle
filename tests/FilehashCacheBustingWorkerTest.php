@@ -29,7 +29,7 @@ class FilehashCacheBustingWorkerTest extends TestCase
 
         $collection = new AssetCollection();
         $collection->setTargetPath('testAsset.txt');
-        $collection->add(new FileAsset(__DIR__ . '/testAsset.txt'));
+        $collection->add(new FileAsset(__DIR__ . '/cache-busting/testAsset.txt'));
 
         $this->worker->process($collection, $factory);
         $this->assertEquals($collection->getTargetPath(), 'testAsset-019b8b3.txt');
@@ -41,8 +41,8 @@ class FilehashCacheBustingWorkerTest extends TestCase
 
         $collection = new AssetCollection();
         $collection->setTargetPath('testAsset.txt');
-        $collection->add(new FileAsset(__DIR__ . '/testAsset.txt'));
-        $collection->add(new FileAsset(__DIR__ . '/testAsset2.txt'));
+        $collection->add(new FileAsset(__DIR__ . '/cache-busting/testAsset.txt'));
+        $collection->add(new FileAsset(__DIR__ . '/cache-busting/testAsset2.txt'));
 
         $this->worker->process($collection, $factory);
         $this->assertEquals($collection->getTargetPath(), 'testAsset-ff6345f.txt');

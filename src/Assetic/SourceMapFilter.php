@@ -135,7 +135,7 @@ class SourceMapFilter implements FilterInterface, HashableInterface
             }
             
             // remove relative path elements
-            $sourceFullPath = $this->getAbsoluteFilename($asset->getSourceRoot() . $asset->getSourcePath());
+            $sourceFullPath = $this->getAbsoluteFilename($asset->getSourceRoot() . '/' . $asset->getSourcePath());
             
             // remove the first part of the path - what's left should be relative to the root project directory
             $sourceFullPath = preg_replace("#^{$this->sourceMapSourcePathTrim}#", '', $sourceFullPath);

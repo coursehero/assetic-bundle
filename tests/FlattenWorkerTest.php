@@ -77,10 +77,10 @@ class FlattenWorkerTest extends TestCase
         $this->assertEquals(count($collection->all()), 1);
 
         $assetBag = array_values($collection->all())[0];
-        $this->assertEquals(get_class($assetBag), CHAssetBag::class);
-        $this->assertEquals(count($assetBag->getFilters()), 1);
-        $this->assertEquals(get_class($assetBag->getFilters()[0]), TestFilter::class);
-        $this->assertEquals($assetBag->getFilters()[0]->vars, [1, 'two', 3]);
+        $this->assertEquals(CHAssetBag::class, get_class($assetBag));
+        $this->assertEquals(1, count($assetBag->getFilters()));
+        $this->assertEquals(TestFilter::class, get_class($assetBag->getFilters()[0]));
+        $this->assertEquals([1, 'two', 3], $assetBag->getFilters()[0]->vars);
     }
 
     private function makeAsset($sourcePath)

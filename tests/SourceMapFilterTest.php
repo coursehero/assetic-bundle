@@ -20,7 +20,7 @@ class SourceMapFilterTest extends TestCase
                 'match' => '/\.js$/',
                 'class' => SourceMapFilter::class,
                 'args' => [[
-                    'site_url' => 'www.coursehero.com',
+                    'site_url' => 'www.coursehero.com/sym-assets',
                     'assetic_write_to' => $asseticWriteTo
                 ]]
             ]
@@ -37,19 +37,17 @@ class SourceMapFilterTest extends TestCase
         $collection = $worker->process($collection, $factory);
         $assetBag = array_values($collection->all())[0];
 
-        $this->assertEquals($assetBag->dump(), <<<EOT
+        $this->assertEquals(<<<EOT
 console.log("string asset for asset1.js");console.log("string asset for asset2.js");console.log("string asset for asset3.js");
 //# sourceMappingURL=www.coursehero.com/sym-assets/asset.js.map
 EOT
-        );
+        , $assetBag->dump());
         
-        $sourceMap = json_decode(file_get_contents("$asseticWriteTo/asset.js.map"), true);
-        $sourceMap['file'] = '***'; // the tmp filename varies
-
-        $this->assertEquals(json_encode($sourceMap), <<<EOT
-{"version":3,"sources":["\/asset1.js","\/asset2.js","\/asset3.js"],"names":["console","log"],"mappings":"AAAAA,QAAQC,IAAI,6BCAZD,SAAQC,IAAI,6BCAZD,SAAQC,IAAI","file":"***","sourceRoot":"sources:\/\/\/","sourcesContent":["console.log('string asset for asset1.js');","console.log('string asset for asset2.js');","console.log('string asset for asset3.js');"]}
+        $sourceMap = file_get_contents("$asseticWriteTo/asset.js.map");
+        $this->assertEquals(<<<EOT
+{"version":3,"sources":["\/asset1.js","\/asset2.js","\/asset3.js"],"names":["console","log"],"mappings":"AAAAA,QAAQC,IAAI,8BCAZD,QAAQC,IAAI,8BCAZD,QAAQC,IAAI","file":"asset.js","sourceRoot":"sources:\/\/\/","sourcesContent":["console.log('string asset for asset1.js');","console.log('string asset for asset2.js');","console.log('string asset for asset3.js');"]}
 EOT
-        );
+        , $sourceMap);
     }
 
     private function makeAsset($sourcePath)

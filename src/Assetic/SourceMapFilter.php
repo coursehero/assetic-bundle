@@ -15,8 +15,7 @@ use Assetic\Filter\HashableInterface;
  * This replaces the built in Uglify filter - it should no longer be used
  *
  * Some possible future improvements:
- * - Upgrade to uglify-es
- * - Allow for input sources to bring along their own source maps. Probably requires uglify-es
+ * - Allow for input sources to bring along their own source maps.
  * - If above works, should be able to remove the BundledWorker/Filter and rely on this instead for TypeScript source maps
  */
 class SourceMapFilter implements FilterInterface, HashableInterface
@@ -45,7 +44,7 @@ class SourceMapFilter implements FilterInterface, HashableInterface
         $this->sourceMapRoot = $options['source_map_root'] ?? 'sources:///';
         $this->asseticWriteToDir = rtrim($options['assetic_write_to'], '/');
         $this->sourceMapSourcePathTrim = $options['source_map_source_path_trim'] ?? '';
-        $this->uglifyBin = $options['uglify_bin'] ?? 'uglifyjs'; // only version 2 is supported
+        $this->uglifyBin = $options['uglify_bin'] ?? 'uglifyjs'; // must be uglify-es
         $this->uglifyOpts = $options['uglify_opts'] ?? '';
     }
 
@@ -105,14 +104,11 @@ class SourceMapFilter implements FilterInterface, HashableInterface
 
     protected function doFilterDump(CHAssetBag $assetBag, string $tmpOutput, array $tmpInputs)
     {
-        $targetPathForSourceMap = $assetBag->getAssetCollectionTargetPath() . '.map';
-        $sourceMapURL = "{$this->siteUrl}/sym-assets/$targetPathForSourceMap";
+        $assetCollectionTargetPath = $assetBag->getAssetCollectionTargetPath();
+        $targetPathForSourceMap = $assetCollectionTargetPath . '.map';
+        $sourceMapURL = "{$this->siteUrl}/$targetPathForSourceMap";
 
-        // this is uglify-es CLI ... image is still using uglify-js for now (note: should test well if upgrading)
-        // $cmd = "$bin {$this->uglifyOpts} --source-map \"root='coursehero:///',includeSources,url=$sourceMapURL\" -o $tmpOutput " . implode(' ', $tmpInputs);
-        
-        // uglify-js
-        $cmd = "{$this->uglifyBin} {$this->uglifyOpts} --source-map $tmpOutput.map --source-map-url $sourceMapURL --source-map-root '{$this->sourceMapRoot}' --source-map-include-sources -o $tmpOutput " . implode(' ', $tmpInputs);
+        $cmd = "{$this->uglifyBin} {$this->uglifyOpts} --source-map \"root='{$this->sourceMapRoot}',includeSources,url=$sourceMapURL,filename='$assetCollectionTargetPath'\" -o $tmpOutput " . implode(' ', $tmpInputs);
 
         $retArr = [];
         $retVal = -1;

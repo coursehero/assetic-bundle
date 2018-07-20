@@ -101,7 +101,7 @@ class SourceMapFilter implements FilterInterface, HashableInterface
                 $matches = [];
                 preg_match('{//# sourceMappingURL=(.*)}', $part, $matches);
 
-                if ($matches[1]) {
+                if (count($matches) === 1 && $matches[1]) {
                     file_put_contents("$tmpInput.map", fopen("$url/$matches[1]", 'r'));
                     
                     // remove the sourceMappingURLComment
@@ -180,7 +180,7 @@ class SourceMapFilter implements FilterInterface, HashableInterface
             if (empty($part) || $part === '.') {
                 continue;
             }
-            
+
             if ($part !== '..') {
                 // cool, we found a new part
                 array_push($path, $part);

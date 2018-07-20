@@ -13,6 +13,10 @@ before_install:
 install:
   - travis_retry composer install
 
+before_script:
+  mkdir /test
+  cd /test
+
 script:
   - mkdir -p build/logs
   - composer test

@@ -101,7 +101,7 @@ class SourceMapFilter implements FilterInterface, HashableInterface
                 $matches = [];
                 preg_match('{//# sourceMappingURL=(.*)}', $part, $matches);
 
-                if (count($matches) === 1 && $matches[1]) {
+                if (count($matches) === 2 && $matches[1]) {
                     file_put_contents("$tmpInput.map", fopen("$url/$matches[1]", 'r'));
                     
                     // remove the sourceMappingURLComment

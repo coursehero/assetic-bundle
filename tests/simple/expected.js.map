@@ -1,9 +1,9 @@
 {
   "version": 3,
   "sources": [
-    "/asset1.js",
-    "/asset2.js",
-    "/asset3.js"
+    "tests/simple/asset1.js",
+    "tests/simple/asset2.js",
+    "tests/simple/asset3.js"
   ],
   "names": [
     "console",

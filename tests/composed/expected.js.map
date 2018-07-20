@@ -1,8 +1,8 @@
 {
     "version": 3,
     "sources": [
-        "\/asset1.js",
-        "\/test\/tests\/composed\/ts.js"
+        "tests\/composed\/asset1.js",
+        "tests\/composed\/ts.js"
     ],
     "names": [
         "console",

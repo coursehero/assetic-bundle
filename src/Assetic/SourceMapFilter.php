@@ -149,12 +149,13 @@ class SourceMapFilter implements FilterInterface, HashableInterface
             if ($asset instanceof HttpAsset) {
                 return 'cdn/' . $asset->getSourcePath();
             }
-            
-            // remove relative path elements
-            $sourceFullPath = $this->getAbsoluteFilename($asset->getSourceRoot() . '/' . $asset->getSourcePath());
-            
+
+            $sourceFullPath = $asset->getSourceRoot() . '/' . $asset->getSourcePath();
+
             // remove the first part of the path - what's left should be relative to the root project directory
             $sourceFullPath = preg_replace("#^{$this->sourceMapSourcePathTrim}#", '', $sourceFullPath);
+            
+            $sourceFullPath = $this->removeRelPathComponents($sourceFullPath);
             
             return $sourceFullPath;
         }, $assetBag->getBag());
@@ -172,7 +173,7 @@ class SourceMapFilter implements FilterInterface, HashableInterface
     }
 
     // https://stackoverflow.com/a/39796579/2788187
-    protected function getAbsoluteFilename(string $filename): string
+    protected function removeRelPathComponents(string $filename): string
     {
         $path = [];
         foreach (explode('/', $filename) as $part) {
@@ -193,6 +194,6 @@ class SourceMapFilter implements FilterInterface, HashableInterface
             }
         }
        
-        return "/" . join('/', $path);
+        return join('/', $path);
     }
 }

@@ -24,7 +24,8 @@ class SourceMapFilterTest extends TestCase
                 'class' => SourceMapFilter::class,
                 'args' => [[
                     'site_url' => 'www.coursehero.com/sym-assets',
-                    'assetic_write_to' => $asseticWriteTo
+                    'assetic_write_to' => $asseticWriteTo,
+                    'source_map_source_path_trim' => dirname(__DIR__)
                 ]]
             ]
         ]);
@@ -33,9 +34,9 @@ class SourceMapFilterTest extends TestCase
 
         $collection = new AssetCollection();
         $collection->setTargetPath('asset.js');
-        $collection->add($this->makeStringAsset('asset1.js'));
-        $collection->add($this->makeStringAsset('asset2.js'));
-        $collection->add($this->makeStringAsset('asset3.js'));
+        $collection->add($this->makeStringAsset(__DIR__ . '/simple', 'asset1.js'));
+        $collection->add($this->makeStringAsset(__DIR__ . '/simple', 'asset2.js'));
+        $collection->add($this->makeStringAsset(__DIR__ . '/simple', 'asset3.js'));
         $collection = $worker->process($collection, $factory);
 
         $this->assertEquals(file_get_contents('tests/simple/expected.js'), $collection->dump());
@@ -54,7 +55,7 @@ class SourceMapFilterTest extends TestCase
                 'args' => [[
                     'site_url' => 'www.coursehero.com/sym-assets',
                     'assetic_write_to' => $asseticWriteTo,
-                    'source_map_source_path_trim' => '/test/'
+                    'source_map_source_path_trim' => dirname(__DIR__)
                 ]]
             ]
         ]);
@@ -63,8 +64,8 @@ class SourceMapFilterTest extends TestCase
 
         $collection = new AssetCollection();
         $collection->setTargetPath('expected.js');
-        $collection->add($this->makeStringAsset('asset1.js'));
-        $collection->add(new FileAsset(dirname(__FILE__) . '/complex/test.js'));
+        $collection->add($this->makeStringAsset(__DIR__ . '/complex', 'asset1.js'));
+        $collection->add(new FileAsset(__DIR__ . '/complex/test.js'));
         $collection->add(new HttpAsset('https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.22.2/moment.js'));
         $collection = $worker->process($collection, $factory);
 
@@ -84,7 +85,8 @@ class SourceMapFilterTest extends TestCase
                 'class' => SourceMapFilter::class,
                 'args' => [[
                     'site_url' => 'www.coursehero.com/sym-assets',
-                    'assetic_write_to' => $asseticWriteTo
+                    'assetic_write_to' => $asseticWriteTo,
+                    'source_map_source_path_trim' => dirname(__DIR__)
                 ]]
             ]
         ]);
@@ -93,7 +95,7 @@ class SourceMapFilterTest extends TestCase
 
         $collection = new AssetCollection();
         $collection->setTargetPath('composed.js');
-        $collection->add($this->makeStringAsset('asset1.js'));
+        $collection->add($this->makeStringAsset(__DIR__ . '/composed', 'asset1.js'));
         $collection->add(new FileAsset(dirname(__FILE__) . '/composed/ts.js'));
         $collection = $worker->process($collection, $factory);
 
@@ -103,15 +105,15 @@ class SourceMapFilterTest extends TestCase
         $this->assertEquals($this->loadSourceMap('tests/composed/expected.js.map'), $sourceMap);
     }
 
-    private function loadSourceMap($path)
+    private function loadSourceMap(string $path)
     {
         $json = file_get_contents($path);
         return json_encode(json_decode($json, true), JSON_PRETTY_PRINT);
     }
 
-    private function makeStringAsset($sourcePath)
+    private function makeStringAsset(string $sourceRoot, string $sourcePath)
     {
-        $asset = new StringAsset("console.log('string asset for $sourcePath');", [], null, $sourcePath);
+        $asset = new StringAsset("console.log('string asset for $sourcePath');", [], $sourceRoot, $sourcePath);
         return $asset;
     }
 }

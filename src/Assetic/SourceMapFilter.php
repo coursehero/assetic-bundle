@@ -94,7 +94,23 @@ class SourceMapFilter implements FilterInterface, HashableInterface
             // give the tmp file a meaningful name, so that uglifyjs output can be made sense of
             $filename = pathinfo($asset->getSourcePath())['filename'];
             $tmpInput = tempnam(sys_get_temp_dir(), "smf-$filename-");
-            
+
+            if ($asset instanceof HttpAsset) {
+                // look for source map
+                $url = $asset->getSourcePath();
+                $matches = [];
+                preg_match('{//# sourceMappingURL=(.*)}', $part, $matches);
+
+                if ($matches[1]) {
+                    file_put_contents("$tmpInput.map", fopen("$url/$matches[1]", 'r'));
+                    
+                    // remove the sourceMappingURLComment
+                    $part = str_replace("//# sourceMappingURL=$matches[1]", '', $part);
+                } else {
+                    // maybe check if there is a map at url + ".map"?
+                }
+            }
+
             file_put_contents($tmpInput, $part);
             $tmpInputs[] = $tmpInput;
         }
@@ -108,7 +124,7 @@ class SourceMapFilter implements FilterInterface, HashableInterface
         $targetPathForSourceMap = $assetCollectionTargetPath . '.map';
         $sourceMapURL = "{$this->siteUrl}/$targetPathForSourceMap";
 
-        $cmd = "{$this->uglifyBin} {$this->uglifyOpts} --source-map \"content=inline,root='{$this->sourceMapRoot}',includeSources,url=$sourceMapURL,filename='$assetCollectionTargetPath'\" -o $tmpOutput " . implode(' ', $tmpInputs);
+        $cmd = "{$this->uglifyBin} {$this->uglifyOpts} --source-map \"content=auto,root='{$this->sourceMapRoot}',includeSources,url=$sourceMapURL,filename='$assetCollectionTargetPath'\" -o $tmpOutput " . implode(' ', $tmpInputs);
 
         $retArr = [];
         $retVal = -1;
@@ -164,7 +180,7 @@ class SourceMapFilter implements FilterInterface, HashableInterface
             if (empty($part) || $part === '.') {
                 continue;
             }
-       
+            
             if ($part !== '..') {
                 // cool, we found a new part
                 array_push($path, $part);

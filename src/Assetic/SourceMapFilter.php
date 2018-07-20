@@ -3,6 +3,7 @@
 namespace CourseHero\AsseticBundle\Assetic;
 
 use Assetic\Asset\AssetInterface;
+use Assetic\Asset\FileAsset;
 use Assetic\Asset\HttpAsset;
 use Assetic\Filter\FilterInterface;
 use Assetic\Filter\HashableInterface;
@@ -59,14 +60,14 @@ class SourceMapFilter implements FilterInterface, HashableInterface
         }
 
         $tmpOutput = tempnam(sys_get_temp_dir(), 'output') . '.js';
-        $tmpInputs = $this->getUglifyJsInputs($assetBag);
+        list($inputs, $tmpInputToAssetMap) = $this->getUglifyJsInputs($assetBag);
 
         try {
-            return $this->doFilterDump($assetBag, $tmpOutput, $tmpInputs);
+            return $this->doFilterDump($assetBag, $tmpOutput, $inputs, $tmpInputToAssetMap);
         } finally {
             unlink($tmpOutput);
             unlink("$tmpOutput.map");
-            foreach ($tmpInputs as $tmpInput) {
+            foreach (array_keys($tmpInputToAssetMap) as $tmpInput) {
                 unlink($tmpInput);
             }
         }
@@ -87,13 +88,21 @@ class SourceMapFilter implements FilterInterface, HashableInterface
 
     protected function getUglifyJsInputs(CHAssetBag $assetBag)
     {
-        $tmpInputs = [];
+        $inputs = [];
+        $tmpInputToAssetMap = [];
+
         foreach ($assetBag->getBag() as $asset) {
+            if ($asset instanceof FileAsset) {
+                $inputs[] = $asset->getSourceRoot() . '/' . $asset->getSourcePath();
+                continue;
+            }
+
             $part = $asset->dump();
             
             // give the tmp file a meaningful name, so that uglifyjs output can be made sense of
             $filename = pathinfo($asset->getSourcePath())['filename'];
             $tmpInput = tempnam(sys_get_temp_dir(), "smf-$filename-");
+            $tmpInputToAssetMap[$tmpInput] = $asset;
 
             if ($asset instanceof HttpAsset) {
                 // look for source map
@@ -112,19 +121,19 @@ class SourceMapFilter implements FilterInterface, HashableInterface
             }
 
             file_put_contents($tmpInput, $part);
-            $tmpInputs[] = $tmpInput;
+            $inputs[] = $tmpInput;
         }
 
-        return $tmpInputs;
+        return [$inputs, $tmpInputToAssetMap];
     }
 
-    protected function doFilterDump(CHAssetBag $assetBag, string $tmpOutput, array $tmpInputs)
+    protected function doFilterDump(CHAssetBag $assetBag, string $tmpOutput, array $inputs, array $tmpInputToAssetMap)
     {
         $assetCollectionTargetPath = $assetBag->getAssetCollectionTargetPath();
         $targetPathForSourceMap = $assetCollectionTargetPath . '.map';
         $sourceMapURL = "{$this->siteUrl}/$targetPathForSourceMap";
 
-        $cmd = "{$this->uglifyBin} {$this->uglifyOpts} --source-map \"content=auto,root='{$this->sourceMapRoot}',includeSources,url=$sourceMapURL,filename='$assetCollectionTargetPath'\" -o $tmpOutput " . implode(' ', $tmpInputs);
+        $cmd = "{$this->uglifyBin} {$this->uglifyOpts} --source-map \"content=auto,root='{$this->sourceMapRoot}',includeSources,url='$sourceMapURL',filename='$assetCollectionTargetPath'\" -o $tmpOutput " . implode(' ', $inputs);
 
         $retArr = [];
         $retVal = -1;
@@ -143,22 +152,26 @@ class SourceMapFilter implements FilterInterface, HashableInterface
         }
         $sourceMap = json_decode(file_get_contents("$tmpOutput.map"), true);
 
-        // translate source filenames
         // the 'sources' property is what dev tools (such as Chrome DevTools) display as the filename for the original source
-        $sourceMap['sources'] = array_map(function ($asset) {
-            if ($asset instanceof HttpAsset) {
-                return 'cdn/' . $asset->getSourcePath();
+        // transform tmp file names back to original file name
+        $sourceMap['sources'] = array_map(function($source) use ($tmpInputToAssetMap) {
+            if (array_key_exists($source, $tmpInputToAssetMap)) {
+                $asset = $tmpInputToAssetMap[$source];
+                if ($asset instanceof HttpAsset) {
+                    return 'cdn/' . $asset->getSourcePath();
+                }
+
+                $source = $asset->getSourceRoot() . '/' . $asset->getSourcePath();
             }
 
-            $sourceFullPath = $asset->getSourceRoot() . '/' . $asset->getSourcePath();
-
             // remove the first part of the path - what's left should be relative to the root project directory
-            $sourceFullPath = preg_replace("#^{$this->sourceMapSourcePathTrim}#", '', $sourceFullPath);
+            $source = preg_replace("#^{$this->sourceMapSourcePathTrim}#", '', $source);
             
-            $sourceFullPath = $this->removeRelPathComponents($sourceFullPath);
+            $source = $this->removeRelPathComponents($source);
             
-            return $sourceFullPath;
-        }, $assetBag->getBag());
+            return $source;
+        }, $sourceMap['sources']);
+
         $sourceMap['sources'] = array_values($sourceMap['sources']);
 
         // save the source map to the sym-assets folder

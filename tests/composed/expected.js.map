@@ -2,7 +2,7 @@
     "version": 3,
     "sources": [
         "tests\/composed\/asset1.js",
-        "tests\/composed\/ts.js"
+        "this\/came\/from\/tsc\/ts.ts"
     ],
     "names": [
         "console",

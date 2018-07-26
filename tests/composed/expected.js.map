@@ -1,0 +1,34 @@
+{
+    "version": 3,
+    "sources": [
+        "tests\/composed\/asset1.js",
+        "this\/came\/from\/tsc\/ts.ts"
+    ],
+    "names": [
+        "console",
+        "log",
+        "Sayings",
+        "Greeter",
+        "message",
+        "this",
+        "greeting",
+        "prototype",
+        "greet",
+        "greeter",
+        "button",
+        "document",
+        "createElement",
+        "innerText",
+        "onclick",
+        "alert",
+        "body",
+        "appendChild"
+    ],
+    "mappings": "AAAAA,QAAQC,IAAI,8BCAZ,IAAOC,SAAP,SAAOA,SACH,IAAAC,QAAA,WAEI,SAAAA,QAAYC,SACRC,KAAKC,SAAWF,QAEpBD,QAAAI,UAAAC,MAAA,WACI,MAAO,UAAYH,KAAKC,UAEhC,OAAAH,QARA,GAAaD,QAAAC,QAAOA,SADxB,CAAOD,UAAAA,QAAO,KAWd,IAAIO,QAAU,IAAIP,QAAQC,QAAQ,SAClC,IAAIO,OAASC,SAASC,cAAc,UACpCF,OAAOG,UAAY,YACnBH,OAAOI,QAAU,WACbC,MAAMN,QAAQD,UAElBG,SAASK,KAAKC,YAAYP",
+    "file": "composed.js",
+    "sourceRoot": "sources:\/\/\/",
+    "sourcesContent": [
+        "console.log('string asset for asset1.js');",
+        "module Sayings {\n    export class Greeter {\n        greeting: string;\n        constructor(message: string) {\n            this.greeting = message;\n        }\n        greet() {\n            return \"Hello, \" + this.greeting;\n        }\n    }\n}\nvar greeter = new Sayings.Greeter(\"world\");\nvar button = document.createElement('button');\nbutton.innerText = \"Say Hello\";\nbutton.onclick = function() {\n    alert(greeter.greet());\n};\ndocument.body.appendChild(button);\n"
+    ]
+}

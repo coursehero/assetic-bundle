@@ -2,7 +2,7 @@ FROM php:7.0
 
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-RUN apt-get update && apt-get install -y zlib1g-dev \
+RUN apt-get update && apt-get install -y git zlib1g-dev \
   && docker-php-ext-install zip
 
 ENV NVM_DIR /usr/local/nvm
@@ -23,4 +23,4 @@ RUN /bin/bash -c "source $NVM_DIR/nvm.sh \
 ENV NODE_PATH $NVM_DIR/v$NODE_VERSION/lib/node_modules
 ENV PATH $NVM_DIR/versions/node/v$NODE_VERSION/bin:$PATH
 
-RUN npm install -g uglify-js@2.8.29
+RUN npm install -g git+https://github.com/hoten/UglifyJS2#118f14

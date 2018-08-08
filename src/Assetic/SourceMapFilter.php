@@ -13,11 +13,8 @@ use Assetic\Filter\HashableInterface;
  *
  * Concat, minify, and generate source maps from many JS assets
  *
- * This replaces the built in Uglify filter - it should no longer be used
+ * This replaces the default UglifyJS filter - it should no longer be used
  *
- * Some possible future improvements:
- * - Allow for input sources to bring along their own source maps.
- * - If above works, should be able to remove the BundledWorker/Filter and rely on this instead for TypeScript source maps
  */
 class SourceMapFilter implements FilterInterface, HashableInterface
 {

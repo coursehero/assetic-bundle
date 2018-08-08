@@ -33,19 +33,6 @@ class FlattenWorker implements WorkerInterface
             return;
         }
 
-        // for now, skip the "bundled" apps.
-        // TODO: Look into removing this guard, and having all source maps flow through the AssetBag / SourceMapFilter
-        $hasBundledAppFilter = false;
-        foreach ($assetCollection->getFilters() as $filter) {
-            if (get_class($filter) == BundledAppFilter::class) {
-                $hasBundledAppFilter = true;
-                break;
-            }
-        }
-        if ($hasBundledAppFilter) {
-            return;
-        }
-
         $newAssets = [];
         $this->flatten($newAssets, $assetCollection);
 

@@ -23,6 +23,11 @@ class RebuildCommand extends DumpCommand
 {
     static $assetTargetPaths;
 
+    /**
+     * Force the rebuild regardless if asset already exists
+     */
+    protected $force;
+
     protected function configure()
     {
         $this
@@ -49,6 +54,12 @@ class RebuildCommand extends DumpCommand
         $stdout->writeln(sprintf('Dumping all <comment>%s</comment> assets.', $input->getOption('env')));
         $stdout->writeln(sprintf('Debug mode is <comment>%s</comment>.', $this->am->isDebug() ? 'on' : 'off'));
         $stdout->writeln('');
+
+        $this->force = $input->getOption('force') ?? false;
+        if($this->force) {
+            $stdout->writeln('<comment>Force recompile</comment>.');
+            $stdout->writeln('');
+        }
 
         self::$assetTargetPaths = [];
         foreach ($this->am->getNames() as $name) {
@@ -197,12 +208,20 @@ class RebuildCommand extends DumpCommand
                 $stdout->writeln(
                     '<info>found</info>'
                 );
-                continue;
-            } else {
+                if(!$this->force) {
+                    continue;
+                }
+
                 $stdout->writeln(
-                    '<comment>creating</comment>'
+                    '<info>force recompile</info>'
                 );
+
+                unlink($target);
             }
+
+            $stdout->writeln(
+                '<comment>creating</comment>'
+            );
 
             if (false === @file_put_contents($target, $asset->dump())) {
                 throw new \RuntimeException('Unable to write file '.$target);

@@ -6,6 +6,7 @@ namespace CourseHero\AsseticBundle\Utils;
 // https://jonathantneal.github.io/sass-import-resolve/
 // http://sass-lang.com/documentation/file.SASS_REFERENCE.html#import
 // https://www.npmjs.com/package/sass-import-resolve
+// Note: Assetic\Util\SassUtils::extractImports was not sufficient
 function resolveScssImport(array $loadPaths, string $importStatement)
 {
     $cleanedStatement = substr($importStatement, strpos($importStatement, '@import') + strlen('@import'));

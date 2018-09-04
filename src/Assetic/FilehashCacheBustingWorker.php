@@ -15,6 +15,14 @@ use CourseHero\AsseticBundle\Utils;
  */
 class FilehashCacheBustingWorker extends CacheBustingWorker
 {
+    protected $sassLoadPaths;
+
+    public function __construct(array $options = [])
+    {
+        parent::__construct($options['separator'] ?? '-');
+        $this->sassLoadPaths = $options['sassLoadPaths'] ?? [];
+    }
+
     public function process(AssetInterface $asset, AssetFactory $factory)
     {
         if (!($asset instanceof AssetCollectionInterface)) {
@@ -74,7 +82,8 @@ class FilehashCacheBustingWorker extends CacheBustingWorker
         });
 
         foreach ($importStatements as $importStatement) {
-            $resolvedPaths = Utils\resolveScssImport([$asset->getSourceDirectory()], $importStatement);
+            $loadPaths = array_merge([$asset->getSourceDirectory()], $this->sassLoadPaths);
+            $resolvedPaths = Utils\resolveScssImport($loadPaths, $importStatement);
             foreach ($resolvedPaths as $import => $paths) {
                 $found = null;
                 foreach ($paths as $path) {
@@ -85,7 +94,7 @@ class FilehashCacheBustingWorker extends CacheBustingWorker
                 }
 
                 if (!$found) {
-                    throw new \Error("Could not resolve import for $import (found in $assetPath)");
+                    throw new \Error("Could not resolve import for $import (found in $assetPath)\n\nTried:\n" . implode("\n", $paths));
                 }
 
                 hash_update($hash, file_get_contents($found));

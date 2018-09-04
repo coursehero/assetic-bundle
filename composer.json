@@ -36,11 +36,13 @@
   "autoload": {
     "psr-4": {
       "CourseHero\\AsseticBundle\\": "src/"
-    }
+    },
+    "files": ["src/Utils.php"]
   },
   "autoload-dev": {
     "psr-4": {
       "CourseHero\\AsseticBundle\\Tests\\": "tests/"
-    }
+    },
+    "files": ["src/Utils.php"]
   }
 }

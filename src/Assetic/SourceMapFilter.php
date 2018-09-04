@@ -152,7 +152,7 @@ class SourceMapFilter implements FilterInterface, HashableInterface
 
         // the 'sources' property is what dev tools (such as Chrome DevTools) display as the filename for the original source
         // transform tmp file names back to original file name
-        $sourceMap['sources'] = array_map(function($source) use ($tmpInputToAssetMap) {
+        $sourceMap['sources'] = array_map(function ($source) use ($tmpInputToAssetMap) {
             if (array_key_exists($source, $tmpInputToAssetMap)) {
                 $asset = $tmpInputToAssetMap[$source];
                 if ($asset instanceof HttpAsset) {

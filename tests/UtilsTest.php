@@ -13,39 +13,47 @@ class UtilsTest extends TestCase
         $actual = Utils\resolveScssImport(['/root'], "   @import 'a'");
         $this->assertEquals([
             'a' => [
-                '/root/a.sass',
-                '/root/_a.sass',
                 '/root/a.scss',
-                '/root/_a.scss'
+                '/root/a.sass',
+                '/root/a.css',
+                '/root/_a.scss',
+                '/root/_a.sass',
+                '/root/_a.css'
             ]
         ], $actual);
 
         $actual = Utils\resolveScssImport(['/root', '/lib/path'], "   @import 'a'");
         $this->assertEquals([
             'a' => [
-                '/root/a.sass',
-                '/lib/path/a.sass',
-                '/root/_a.sass',
-                '/lib/path/_a.sass',
                 '/root/a.scss',
                 '/lib/path/a.scss',
+                '/root/a.sass',
+                '/lib/path/a.sass',
+                '/root/a.css',
+                '/lib/path/a.css',
                 '/root/_a.scss',
-                '/lib/path/_a.scss'
+                '/lib/path/_a.scss',
+                '/root/_a.sass',
+                '/lib/path/_a.sass',
+                '/root/_a.css',
+                '/lib/path/_a.css'
             ]
         ], $actual);
 
         $actual = Utils\resolveScssImport(['/root'], "@import '_a'");
         $this->assertEquals([
             '_a' => [
+                '/root/_a.scss',
                 '/root/_a.sass',
-                '/root/_a.scss'
+                '/root/_a.css'
             ]
         ], $actual);
 
         $actual = Utils\resolveScssImport(['/root'], "@import 'a.scss'");
         $this->assertEquals([
             'a.scss' => [
-               '/root/a.scss'
+               '/root/a.scss',
+               '/root/_a.scss'
             ]
         ], $actual);
 
@@ -57,25 +65,31 @@ class UtilsTest extends TestCase
         ;');
         $this->assertEquals([
             'a' => [
-                '/root/nested/a.sass',
-                '/root/nested/_a.sass',
                 '/root/nested/a.scss',
-                '/root/nested/_a.scss'
-           ],
-           '../b/a' => [
-                '/root/b/a.sass',
-                '/root/b/_a.sass',
+                '/root/nested/a.sass',
+                '/root/nested/a.css',
+                '/root/nested/_a.scss',
+                '/root/nested/_a.sass',
+                '/root/nested/_a.css'
+            ],
+            '../b/a' => [
                 '/root/b/a.scss',
+                '/root/b/a.sass',
+                '/root/b/a.css',
                 '/root/b/_a.scss',
-           ],
-           'c.scss' => [
+                '/root/b/_a.sass',
+                '/root/b/_a.css'
+            ],
+            'c.scss' => [
                 '/root/nested/c.scss',
-           ],
-           '_d' => [
+                '/root/nested/_c.scss'
+            ],
+            '_d' => [
+                '/root/nested/_d.scss',
                 '/root/nested/_d.sass',
-                '/root/nested/_d.scss'
-           ]
-       ], $actual);
+                '/root/nested/_d.css'
+            ]
+        ], $actual);
     }
 
     public function testRemoveRelPathComponents()

@@ -13,7 +13,7 @@ function resolveScssImport(array $loadPaths, string $importStatement)
     $cleanedStatement = rtrim($cleanedStatement, ';');
     $cleanedStatement = trim($cleanedStatement, ' ');
     $splitByComma = explode(',', $cleanedStatement);
-    $imports = array_map(function(string $dirtyBase) {
+    $imports = array_map(function (string $dirtyBase) {
         return trim($dirtyBase, " \n\r\"'");
     }, $splitByComma);
 
@@ -23,16 +23,21 @@ function resolveScssImport(array $loadPaths, string $importStatement)
         $parts = explode('/', $import);
         $base = array_pop($parts);
 
-        if ($base[0] === '_') {
-            array_push($resolvedBases, "$base.sass");
+        $ext = pathinfo($base, PATHINFO_EXTENSION);
+        if ($ext === '') {
             array_push($resolvedBases, "$base.scss");
-        } else if (substr($base, -strlen('.scss')) === '.scss') {
-            array_push($resolvedBases, "$base");
+            array_push($resolvedBases, "$base.sass");
+            array_push($resolvedBases, "$base.css");
+            if ($base[0] != '_') {
+                array_push($resolvedBases, "_$base.scss");
+                array_push($resolvedBases, "_$base.sass");
+                array_push($resolvedBases, "_$base.css");
+            }
         } else {
-            array_push($resolvedBases, "$base.sass");
-            array_push($resolvedBases, "_$base.sass");
-            array_push($resolvedBases, "$base.scss");
-            array_push($resolvedBases, "_$base.scss");
+            array_push($resolvedBases, "$base");
+            if ($base[0] != '_') {
+                array_push($resolvedBases, "_$base");
+            }
         }
 
         $resolved = [];

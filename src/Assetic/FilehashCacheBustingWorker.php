@@ -78,7 +78,7 @@ class FilehashCacheBustingWorker extends CacheBustingWorker
         $assetPath = $asset->getSourceRoot() . '/' . $asset->getSourcePath();
         $content = file_get_contents($assetPath);
         $statements = preg_split("/[;}]/", $content);
-        $importStatements = array_filter($statements, function($statement) {
+        $importStatements = array_filter($statements, function ($statement) {
             return preg_match("/\s*@import/", $statement);
         });
 

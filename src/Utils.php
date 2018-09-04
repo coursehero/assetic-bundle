@@ -4,8 +4,6 @@ namespace CourseHero\AsseticBundle\Utils;
 
 function resolveScssImport(array $loadPaths, string $importStatement)
 {
-    $cwd = rtrim($cwd, '/');
-    
     $cleanedStatement = substr($importStatement, strpos($importStatement, '@import') + strlen('@import'));
     $cleanedStatement = rtrim($cleanedStatement, ';');
     $cleanedStatement = trim($cleanedStatement, ' ');

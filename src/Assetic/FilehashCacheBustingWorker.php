@@ -72,6 +72,7 @@ class FilehashCacheBustingWorker extends CacheBustingWorker
         return $cloned->getContent();
     }
 
+    // TODO: also hash indirect imports
     protected function hashScssContent(&$hash, AssetInterface $asset)
     {
         $assetPath = $asset->getSourceRoot() . '/' . $asset->getSourcePath();

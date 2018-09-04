@@ -66,7 +66,7 @@ class FilehashCacheBustingWorker extends CacheBustingWorker
 
     protected function hashScssContent(&$hash, AssetInterface $asset)
     {
-        $assetPath = $asset->getSourceDirectory() . '/' . $asset->getSourcePath();
+        $assetPath = $asset->getSourceRoot() . '/' . $asset->getSourcePath();
         $content = file_get_contents($assetPath);
         $statements = preg_split("/[;}]/", $content);
         $importStatements = array_filter($statements, function($statement) {

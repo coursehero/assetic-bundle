@@ -56,7 +56,7 @@ class RebuildCommand extends DumpCommand
         $stdout->writeln('');
 
         $this->force = $input->getOption('force') ?? false;
-        if($this->force) {
+        if ($this->force) {
             $stdout->writeln('<comment>Force recompile</comment>.');
             $stdout->writeln('');
         }
@@ -208,7 +208,7 @@ class RebuildCommand extends DumpCommand
                 $stdout->writeln(
                     '<info>found</info>'
                 );
-                if(!$this->force) {
+                if (!$this->force) {
                     continue;
                 }
 

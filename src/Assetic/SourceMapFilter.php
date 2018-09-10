@@ -7,6 +7,7 @@ use Assetic\Asset\FileAsset;
 use Assetic\Asset\HttpAsset;
 use Assetic\Filter\FilterInterface;
 use Assetic\Filter\HashableInterface;
+use CourseHero\AsseticBundle\Utils;
 
 /**
  * Operates on CHAssetBags
@@ -151,7 +152,7 @@ class SourceMapFilter implements FilterInterface, HashableInterface
 
         // the 'sources' property is what dev tools (such as Chrome DevTools) display as the filename for the original source
         // transform tmp file names back to original file name
-        $sourceMap['sources'] = array_map(function($source) use ($tmpInputToAssetMap) {
+        $sourceMap['sources'] = array_map(function ($source) use ($tmpInputToAssetMap) {
             if (array_key_exists($source, $tmpInputToAssetMap)) {
                 $asset = $tmpInputToAssetMap[$source];
                 if ($asset instanceof HttpAsset) {
@@ -164,7 +165,8 @@ class SourceMapFilter implements FilterInterface, HashableInterface
             // remove the first part of the path - what's left should be relative to the root project directory
             $source = preg_replace("#^{$this->sourceMapSourcePathTrim}#", '', $source);
             
-            $source = $this->removeRelPathComponents($source);
+            $source = Utils\removeRelPathComponents($source);
+            $source = ltrim($source, '/');
             
             return $source;
         }, $sourceMap['sources']);
@@ -180,30 +182,5 @@ class SourceMapFilter implements FilterInterface, HashableInterface
         
         $assetBag->setContent($minifiedCode);
         return $assetBag;
-    }
-
-    // https://stackoverflow.com/a/39796579/2788187
-    protected function removeRelPathComponents(string $filename): string
-    {
-        $path = [];
-        foreach (explode('/', $filename) as $part) {
-             // ignore parts that have no value
-            if (empty($part) || $part === '.') {
-                continue;
-            }
-
-            if ($part !== '..') {
-                // cool, we found a new part
-                array_push($path, $part);
-            } elseif (count($path) > 0) {
-                // going back up? sure
-                array_pop($path);
-            } else {
-                // now, here we don't like
-                throw new \Exception('Climbing above the root is not permitted.');
-            }
-        }
-       
-        return join('/', $path);
     }
 }

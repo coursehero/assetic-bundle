@@ -25,26 +25,43 @@ class FilehashCacheBustingWorkerTest extends TestCase
 
     public function testHashIndividualFile()
     {
-        $factory = $this->createMock(AssetFactory::class);
-
-        $collection = new AssetCollection();
-        $collection->setTargetPath('testAsset.txt');
-        $collection->add(new FileAsset(__DIR__ . '/cache-busting/testAsset.txt'));
-
-        $this->worker->process($collection, $factory);
-        $this->assertEquals($collection->getTargetPath(), 'testAsset-019b8b3.txt');
+        $actualTargetPath = $this->getCacheBustingTargetPath('testAsset.txt', [
+            new FileAsset(__DIR__ . '/cache-busting/testAsset.txt')
+        ]);
+        $this->assertEquals($actualTargetPath, 'testAsset-019b8b3.txt');
     }
 
     public function testHashMultipleFiles()
     {
+        $actualTargetPath = $this->getCacheBustingTargetPath('testAsset.txt', [
+            new FileAsset(__DIR__ . '/cache-busting/testAsset.txt'),
+            new FileAsset(__DIR__ . '/cache-busting/testAsset2.txt')
+        ]);
+        $this->assertEquals($actualTargetPath, 'testAsset-ff6345f.txt');
+    }
+
+    public function testHashScssImports()
+    {
+        $targetPath1 = $this->getCacheBustingTargetPath('main.css', [
+            new FileAsset(__DIR__ . '/cache-busting/scss-1/main.scss')
+        ]);
+        $targetPath2 = $this->getCacheBustingTargetPath('main.css', [
+            new FileAsset(__DIR__ . '/cache-busting/scss-2/main.scss')
+        ]);
+        $this->assertNotEquals($targetPath1, $targetPath2, 'Hash did not take imported files into account');
+    }
+
+    private function getCacheBustingTargetPath(string $targetPath, array $files)
+    {
         $factory = $this->createMock(AssetFactory::class);
 
         $collection = new AssetCollection();
-        $collection->setTargetPath('testAsset.txt');
-        $collection->add(new FileAsset(__DIR__ . '/cache-busting/testAsset.txt'));
-        $collection->add(new FileAsset(__DIR__ . '/cache-busting/testAsset2.txt'));
+        $collection->setTargetPath($targetPath);
+        foreach ($files as $file) {
+            $collection->add($file);
+        }
 
         $this->worker->process($collection, $factory);
-        $this->assertEquals($collection->getTargetPath(), 'testAsset-ff6345f.txt');
+        return $collection->getTargetPath();
     }
 }

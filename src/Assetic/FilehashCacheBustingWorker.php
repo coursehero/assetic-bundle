@@ -8,12 +8,21 @@ use Assetic\Asset\AssetReference;
 use Assetic\Factory\AssetFactory;
 use Assetic\Factory\Worker\CacheBustingWorker;
 use Assetic\Filter\HashableInterface;
+use CourseHero\AsseticBundle\Utils;
 
 /**
  * Adds cache busting based on the hash of all asset contents
  */
 class FilehashCacheBustingWorker extends CacheBustingWorker
 {
+    protected $sassLoadPaths;
+
+    public function __construct(array $options = [])
+    {
+        parent::__construct($options['separator'] ?? '-');
+        $this->sassLoadPaths = $options['sassLoadPaths'] ?? [];
+    }
+
     public function process(AssetInterface $asset, AssetFactory $factory)
     {
         if (!($asset instanceof AssetCollectionInterface)) {
@@ -28,6 +37,13 @@ class FilehashCacheBustingWorker extends CacheBustingWorker
         $hash = hash_init('sha1');
         $content = $this->getUnfilteredAssetContent($assetCollection);
         hash_update($hash, $content);
+
+        foreach ($assetCollection as $asset) {
+            $ext = pathinfo($asset->getSourcePath(), PATHINFO_EXTENSION);
+            if ($ext === 'scss') {
+                $this->hashScssContent($hash, $asset);
+            }
+        }
 
         // Assetic generates a hash for the filters applied before workers, but not after
         // only applies to CHAssetBag
@@ -54,5 +70,36 @@ class FilehashCacheBustingWorker extends CacheBustingWorker
         }
         $cloned->load();
         return $cloned->getContent();
+    }
+
+    // TODO: also hash indirect imports
+    protected function hashScssContent(&$hash, AssetInterface $asset)
+    {
+        $assetPath = $asset->getSourceRoot() . '/' . $asset->getSourcePath();
+        $content = file_get_contents($assetPath);
+        $statements = preg_split("/[;}]/", $content);
+        $importStatements = array_filter($statements, function ($statement) {
+            return preg_match("/\s*@import/", $statement);
+        });
+
+        foreach ($importStatements as $importStatement) {
+            $loadPaths = array_merge([$asset->getSourceDirectory()], $this->sassLoadPaths);
+            $resolvedPaths = Utils\resolveScssImport($loadPaths, $importStatement);
+            foreach ($resolvedPaths as $import => $paths) {
+                $found = null;
+                foreach ($paths as $path) {
+                    if (file_exists($path)) {
+                        $found = $path;
+                        break;
+                    }
+                }
+
+                if (!$found) {
+                    throw new \Error("Could not resolve import for $import (found in $assetPath)\n\nTried:\n" . implode("\n", $paths));
+                }
+
+                hash_update($hash, file_get_contents($found));
+            }
+        }
     }
 }

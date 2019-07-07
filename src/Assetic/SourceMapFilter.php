@@ -164,14 +164,18 @@ class SourceMapFilter implements FilterInterface, HashableInterface
 
             // remove the first part of the path - what's left should be relative to the root project directory
             $source = preg_replace("#^{$this->sourceMapSourcePathTrim}#", '', $source);
-            
-            $source = Utils\removeRelPathComponents($source);
-            $source = ltrim($source, '/');
-            
-            return $source;
+
+
+            try {
+                $source = Utils\removeRelPathComponents($source);
+                $source = ltrim($source, '/');
+                return $source;
+            } catch (\Exception $e) {
+                return null;
+            }
         }, $sourceMap['sources']);
 
-        $sourceMap['sources'] = array_values($sourceMap['sources']);
+        $sourceMap['sources'] = array_values(array_filter($sourceMap['sources']));
 
         // save the source map to the sym-assets folder
         $to = $this->asseticWriteToDir . '/' . $targetPathForSourceMap;

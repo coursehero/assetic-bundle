@@ -3,7 +3,8 @@
   "sources": [
     "tests/simple/asset1.js",
     "tests/simple/asset2.js",
-    "tests/simple/asset3.js"
+    "tests/simple/asset3.js",
+    "../../climb-above-root.js"
   ],
   "names": [
     "console",

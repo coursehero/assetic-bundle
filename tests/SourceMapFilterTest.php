@@ -37,7 +37,7 @@ class SourceMapFilterTest extends TestCase
         $collection->add($this->makeStringAsset(__DIR__ . '/simple', 'asset1.js'));
         $collection->add($this->makeStringAsset(__DIR__ . '/simple', 'asset2.js'));
         $collection->add($this->makeStringAsset(__DIR__ . '/simple', 'asset3.js'));
-        $collection->add($this->makeStringAsset('/../../', 'climb-above-root.js'));
+        $collection->add($this->makeStringAsset('/../..', 'climb-above-root.js'));
         $collection = $worker->process($collection, $factory);
 
         $this->assertEquals(file_get_contents('tests/simple/expected.js'), $collection->dump());

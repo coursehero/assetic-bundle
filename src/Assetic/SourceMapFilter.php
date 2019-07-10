@@ -153,6 +153,7 @@ class SourceMapFilter implements FilterInterface, HashableInterface
         // the 'sources' property is what dev tools (such as Chrome DevTools) display as the filename for the original source
         // transform tmp file names back to original file name
         $sourceMap['sources'] = array_map(function ($source) use ($tmpInputToAssetMap) {
+
             if (array_key_exists($source, $tmpInputToAssetMap)) {
                 $asset = $tmpInputToAssetMap[$source];
                 if ($asset instanceof HttpAsset) {
@@ -161,21 +162,19 @@ class SourceMapFilter implements FilterInterface, HashableInterface
 
                 $source = $asset->getSourceRoot() . '/' . $asset->getSourcePath();
             }
-
             // remove the first part of the path - what's left should be relative to the root project directory
             $source = preg_replace("#^{$this->sourceMapSourcePathTrim}#", '', $source);
 
-
             try {
                 $source = Utils\removeRelPathComponents($source);
-                $source = ltrim($source, '/');
-                return $source;
             } catch (\Exception $e) {
-                return null;
+                // relative paths above the root are ok here
             }
+            $source = ltrim($source, '/');
+            return $source;
         }, $sourceMap['sources']);
 
-        $sourceMap['sources'] = array_values(array_filter($sourceMap['sources']));
+        $sourceMap['sources'] = array_values($sourceMap['sources']);
 
         // save the source map to the sym-assets folder
         $to = $this->asseticWriteToDir . '/' . $targetPathForSourceMap;

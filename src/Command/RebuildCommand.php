@@ -163,22 +163,18 @@ class RebuildCommand extends DumpCommand
             self::$assetTargetPaths[] = $target;
 
             if (!is_dir($dir = dirname($target))) {
-                $stdout->writeln(sprintf(
-                    '<comment>%s</comment> <info>[dir+]</info> %s',
-                    date('H:i:s'),
-                    $dir
-                ));
+                if (OutputInterface::VERBOSITY_VERBOSE <= $stdout->getVerbosity()) {
+                    $stdout->writeln(sprintf(
+                        '<comment>%s</comment> <info>[dir+]</info> %s',
+                        date('H:i:s'),
+                        $dir
+                    ));
+                }
 
                 if (false === @mkdir($dir, 0777, true)) {
                     throw new \RuntimeException('Unable to create directory '.$dir);
                 }
             }
-
-            $stdout->writeln(sprintf(
-                '<comment>%s</comment> <info>[file+]</info> %s',
-                date('H:i:s'),
-                $target
-            ));
 
             if (OutputInterface::VERBOSITY_VERBOSE <= $stdout->getVerbosity()) {
                 if ($asset instanceof AssetCollectionInterface) {
@@ -205,23 +201,29 @@ class RebuildCommand extends DumpCommand
             }
 
             if (\file_exists($target)) {
-                $stdout->writeln(
-                    '<info>found</info>'
-                );
+                if (OutputInterface::VERBOSITY_VERBOSE <= $stdout->getVerbosity()) {
+                    $stdout->writeln(
+                        '<info>found</info>'
+                    );
+                }
                 if (!$this->force) {
                     continue;
                 }
 
-                $stdout->writeln(
-                    '<info>force recompile</info>'
-                );
+                if (OutputInterface::VERBOSITY_VERBOSE <= $stdout->getVerbosity()) {
+                    $stdout->writeln(
+                        '<info>force recompile</info>'
+                    );
+                }
 
                 unlink($target);
             }
 
-            $stdout->writeln(
-                '<comment>creating</comment>'
-            );
+            $stdout->writeln(sprintf(
+                '<comment>%s</comment> <info>[compiling file+]</info> %s',
+                date('H:i:s'),
+                $target
+            ));
 
             if (false === @file_put_contents($target, $asset->dump())) {
                 throw new \RuntimeException('Unable to write file '.$target);

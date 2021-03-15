@@ -46,6 +46,68 @@ class SourceMapFilterTest extends TestCase
         $this->assertEquals($this->loadSourceMap('tests/simple/expected.js.map'), $sourceMap);
     }
 
+    public function testSourceMapFilterSimpleRelativeMapPathEmpty()
+    {
+        $asseticWriteTo = sys_get_temp_dir();
+        $worker = new FlattenWorker([
+            [
+                'match' => '/\.js$/',
+                'class' => SourceMapFilter::class,
+                'args' => [[
+                    'site_url' => '', // empty siteURL
+                    'assetic_write_to' => $asseticWriteTo,
+                    'source_map_source_path_trim' => dirname(__DIR__)
+                ]]
+            ]
+        ]);
+
+        $factory = $this->createMock(AssetFactory::class);
+
+        $collection = new AssetCollection();
+        $collection->setTargetPath('asset.js');
+        $collection->add($this->makeStringAsset(__DIR__ . '/relative', 'asset1.js'));
+        $collection->add($this->makeStringAsset(__DIR__ . '/relative', 'asset2.js'));
+        $collection->add($this->makeStringAsset(__DIR__ . '/relative', 'asset3.js'));
+        $collection->add($this->makeStringAsset('/../..', 'climb-above-root.js'));
+        $collection = $worker->process($collection, $factory);
+
+        $this->assertEquals(file_get_contents('tests/relative/expected.js'), $collection->dump());
+
+        $sourceMap = $this->loadSourceMap("$asseticWriteTo/asset.js.map");
+        $this->assertEquals($this->loadSourceMap('tests/relative/expected.js.map'), $sourceMap);
+    }
+
+    public function testSourceMapFilterSimpleRelativeMapPathNull()
+    {
+        $asseticWriteTo = sys_get_temp_dir();
+        $worker = new FlattenWorker([
+            [
+                'match' => '/\.js$/',
+                'class' => SourceMapFilter::class,
+                'args' => [[
+                    'site_url' => null, // empty siteURL
+                    'assetic_write_to' => $asseticWriteTo,
+                    'source_map_source_path_trim' => dirname(__DIR__)
+                ]]
+            ]
+        ]);
+
+        $factory = $this->createMock(AssetFactory::class);
+
+        $collection = new AssetCollection();
+        $collection->setTargetPath('asset.js');
+        $collection->add($this->makeStringAsset(__DIR__ . '/relative', 'asset1.js'));
+        $collection->add($this->makeStringAsset(__DIR__ . '/relative', 'asset2.js'));
+        $collection->add($this->makeStringAsset(__DIR__ . '/relative', 'asset3.js'));
+        $collection->add($this->makeStringAsset('/../..', 'climb-above-root.js'));
+        $collection = $worker->process($collection, $factory);
+
+        $this->assertEquals(file_get_contents('tests/relative/expected.js'), $collection->dump());
+
+        $sourceMap = $this->loadSourceMap("$asseticWriteTo/asset.js.map");
+        $this->assertEquals($this->loadSourceMap('tests/relative/expected.js.map'), $sourceMap);
+    }
+
     public function testSourceMapFilterComplex()
     {
         $asseticWriteTo = sys_get_temp_dir();

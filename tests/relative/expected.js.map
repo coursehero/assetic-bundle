@@ -1,0 +1,22 @@
+{
+  "version": 3,
+  "sources": [
+    "tests/relative/asset1.js",
+    "tests/relative/asset2.js",
+    "tests/relative/asset3.js",
+    "../../climb-above-root.js"
+  ],
+  "names": [
+    "console",
+    "log"
+  ],
+  "mappings": "AAAAA,QAAQC,IAAI,8BCAZD,QAAQC,IAAI,8BCAZD,QAAQC,IAAI,8BCAZD,QAAQC,IAAI",
+  "file": "asset.js",
+  "sourceRoot": "sources:///",
+  "sourcesContent": [
+    "console.log('string asset for asset1.js');",
+    "console.log('string asset for asset2.js');",
+    "console.log('string asset for asset3.js');",
+    "console.log('string asset for climb-above-root.js');"
+  ]
+}
